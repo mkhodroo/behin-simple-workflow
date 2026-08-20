@@ -5,7 +5,10 @@
     "autoload": {
         "psr-4": {
             "Behin\\SimpleWorkflow\\": "src/"
-        }
+        },
+        "files": [
+            "src/Helper/behin-simple-workflow.php"
+        ]
     },
     "authors": [
         {
