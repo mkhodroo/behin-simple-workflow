@@ -10,6 +10,13 @@
             "src/Helper/behin-simple-workflow.php"
         ]
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Behin\\SimpleWorkflow\\SimpleWorkflowProvider"
+            ]
+        }
+    },
     "authors": [
         {
             "name": "mkhodroo",
