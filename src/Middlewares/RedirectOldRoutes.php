@@ -1,4 +1,5 @@
 <?php
+
 namespace Behin\SimpleWorkflow\Middlewares;
 
 use Closure;
@@ -8,7 +9,7 @@ class RedirectOldRoutes
 {
     public function handle(Request $request, Closure $next)
     {
-        if ($request->is('simpleWorkflow.inbox.index')) {
+        if ($request->routeIs('simpleWorkflow.inbox.index')) {
             return redirect()->route('simpleWorkflow.inbox.categorized');
         }
 
