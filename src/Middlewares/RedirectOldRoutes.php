@@ -1,0 +1,17 @@
+<?php
+namespace Behin\SimpleWorkflow\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class RedirectOldRoutes
+{
+    public function handle(Request $request, Closure $next)
+    {
+        if ($request->is('simpleWorkflow.inbox.index')) {
+            return redirect()->route('simpleWorkflow.inbox.categorized');
+        }
+
+        return $next($request);
+    }
+}
