@@ -899,7 +899,7 @@
 
                 <div class="inbox-title-wrapper">
                     <div class="inbox-title-icon">
-                        <i class="material-icons">inbox</i>
+                        <i class="fa fa-folder"></i>
                     </div>
 
                     <div>
@@ -915,7 +915,7 @@
 
                 <div class="inbox-total-box">
                     <div class="icon">
-                        <i class="material-icons">assignment</i>
+                        <i class="fa fa-tasks"></i>
                     </div>
 
                     <div>
@@ -934,7 +934,7 @@
             <div class="category-section">
 
                 <div class="section-label">
-                    <i class="material-icons">category</i>
+                    <i class="fa fa-category"></i>
                     <span>{{ trans('fields.Switch Task') }}</span>
                 </div>
 
@@ -948,7 +948,7 @@
                         <div class="chip-main">
 
                             <span class="chip-icon">
-                                <i class="material-icons">apps</i>
+                                <i class="fa fa-program"></i>
                             </span>
 
                             <span class="chip-label">
@@ -973,7 +973,7 @@
                             <div class="chip-main">
 
                                 <span class="chip-icon">
-                                    <i class="material-icons">task_alt</i>
+                                    <i class="fa fa-tasks"></i>
                                 </span>
 
                                 <span class="chip-label"
@@ -1015,7 +1015,7 @@
 
                     <div class="inbox-title-icon"
                         style="width:40px;height:40px;border-radius:11px;box-shadow:none;">
-                        <i class="material-icons" style="font-size:20px;">filter_alt</i>
+                        <i class="fa fa-search" style="font-size:20px;"></i>
                     </div>
 
                     <div class="d-flex flex-column">
@@ -1042,7 +1042,7 @@
                     </div>
 
                     <button type="button" data-task-filter="">
-                        <i class="material-icons">close</i>
+                        <i class="fa fa-close"></i>
                         {{ trans('fields.Clear Filter') }}
                     </button>
 
@@ -1065,7 +1065,7 @@
                         <div class="advanced-filter-title">
 
                             <div class="advanced-filter-icon">
-                                <i class="material-icons">tune</i>
+                                <i class="fa fa-true"></i>
                             </div>
 
                             <div>
@@ -1110,8 +1110,8 @@
                                 id="add-advanced-condition"
                                 {{ empty($availableVariables) ? 'disabled' : '' }}>
 
-                                <i class="material-icons" style="font-size:17px;">
-                                    add
+                                <i class="fa fa-plus" style="font-size:17px;">
+                                    
                                 </i>
 
                                 {{ trans('fields.Add Condition') }}
@@ -1150,8 +1150,8 @@
                                 class="btn-modern-primary"
                                 id="apply-advanced-filter">
 
-                                <i class="material-icons" style="font-size:16px;">
-                                    filter_alt
+                                <i class="fa fa-search" style="font-size:16px;">
+                                    
                                 </i>
 
                                 {{ trans('fields.Apply Filter') }}
@@ -1182,7 +1182,7 @@
                 <div class="inbox-empty">
 
                     <div class="inbox-empty-icon">
-                        <i class="material-icons">inbox</i>
+                        <i class="fa fa-folder"></i>
                     </div>
 
                     <div class="inbox-empty-title">
@@ -1269,8 +1269,8 @@
                                                 class="row-action view"
                                                 title="{{ trans('fields.View') }}">
 
-                                                <i class="material-icons">
-                                                    open_in_new
+                                                <i class="fa fa-folder">
+                                                    
                                                 </i>
 
                                             </a>
@@ -1283,8 +1283,8 @@
                                                     onclick="return confirm('آیا از لغو درخواست مطمئن هستید؟')"
                                                     class="row-action cancel">
 
-                                                    <i class="material-icons">
-                                                        cancel
+                                                    <i class="fa fa-trash">
+                                                        
                                                     </i>
 
                                                 </a>
