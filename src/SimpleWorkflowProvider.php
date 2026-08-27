@@ -3,6 +3,7 @@
 namespace Behin\SimpleWorkflow;
 
 use Illuminate\Support\ServiceProvider;
+use Behin\SimpleWorkflwo\Middlewares\RedirectOldRoute;
 
 class SimpleWorkflowProvider extends ServiceProvider
 {
@@ -31,7 +32,7 @@ class SimpleWorkflowProvider extends ServiceProvider
         //ریدایرکت اینباکس قدیمی به جدید
         $this->app['router']->pushMiddlewareToGroup(
             'web',
-            \Behin\YourPackage\Http\Middleware\RedirectOldRoute::class
+            RedirectOldRoute::class
         );
     }
 }

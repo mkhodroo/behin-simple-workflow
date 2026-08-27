@@ -1,5 +1,5 @@
 <?php
-namespace Behin\SimpleWorkflow\Middleware;
+namespace Behin\SimpleWorkflow\Middlewares;
 
 use Closure;
 use Illuminate\Http\Request;
