@@ -8,7 +8,7 @@
     $executive_file_content = $script->content;
     if (!$executive_file_content && $script->executive_file) {
         $filePath = base_path(
-            'packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php',
+            'vendor/behin/simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php',
         );
         if (file_exists($filePath)) {
             $executive_file_content = File::get($filePath);
@@ -57,7 +57,7 @@
                     <div class="mb-3">
                         <label for="executive_file" class="form-label">{{ trans('Executive File') }}</label>
                         <select name="executive_file" id="executive_file" class="form-select select2">
-                            @foreach (File::files(base_path('packages/behin-simple-workflow/src/Controllers/Scripts')) as $file)
+                            @foreach (File::files(base_path('vendor/behin/simple-workflow/src/Controllers/Scripts')) as $file)
                                 <option value="{{ str_replace('.php', '', $file->getFilename()) }}"
                                     {{ $script->executive_file . '.php' == $file->getFilename() ? 'selected' : '' }}>
                                     {{ $file->getFilename() }}

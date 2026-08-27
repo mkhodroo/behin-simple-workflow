@@ -13,7 +13,7 @@ class SimpleWorkflowProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->mergeConfigFrom(__DIR__.'/config/workflow.php', 'workflow');
     }
 
     /**
