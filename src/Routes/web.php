@@ -129,6 +129,7 @@ Route::name('simpleWorkflow.')->prefix('workflow')->middleware(['web', 'auth'])-
     Route::get('view-model/{view_model}/copy', [ViewModelController::class, 'copy'])->name('view-model.copy');
     Route::post('view-model/export', [ViewModelController::class, 'export'])->name('view-model.export');
     Route::post('view-model/import', [ViewModelController::class, 'import'])->name('view-model.import');
+    Route::post('get-view-model-create-new-btn', [ViewModelController::class, 'createNewBtnHtml'])->name('view-model.get-create-new-btn');
     Route::post('get-view-model-rows', [ViewModelController::class, 'getRows'])->name('view-model.get-rows');
     Route::post('delete-view-model-record', [ViewModelController::class, 'deleteRecord'])->name('view-model.delete-record');
 });

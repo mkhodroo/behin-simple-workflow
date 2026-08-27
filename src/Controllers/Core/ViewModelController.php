@@ -190,6 +190,85 @@ class ViewModelController extends Controller
         return false;
     }
 
+    public function createNewBtnHtml(Request $request)
+    {
+        $case = CaseController::getById($request->case_id);
+
+        $viewModel = self::getById($request->viewModel_id);
+
+        $model = self::getModelById($viewModel->id);
+
+        if ($viewModel->api_key != $request->api_key) {
+            return response(
+                trans("fields.Api key is not valid"),
+                403
+            );
+        }
+
+        $max_number_of_rows = $viewModel->max_number_of_rows;
+
+        /*
+     * دریافت رکوردها
+     */
+        if ($viewModel->allow_read_row) {
+
+            if ($viewModel->show_rows_based_on == 'case_id') {
+
+                $rows = $model::where('case_id', $case->id)
+                    ->whereNull('deleted_at');
+            } elseif ($viewModel->show_rows_based_on == 'case_number') {
+
+                $rows = $model::where('case_number', $case->number)
+                    ->whereNull('deleted_at');
+            } else {
+
+                $rows = $model::query()
+                    ->whereNull('deleted_at');
+            }
+        }
+
+        $rows = $rows->get();
+
+
+        /*
+     * ایجاد HTML دکمه
+     */
+        $s = '';
+
+        if (
+            $viewModel->allow_create_row &&
+            count($rows) < $max_number_of_rows
+        ) {
+
+            $btnLabel = '';//trans('fields.Create new');
+
+            $s .= "<button
+            type='button'
+            class='btn btn-success'
+            style='
+                height: 100%;
+                border-radius: 0;
+                white-space: nowrap;
+                border-top: 0;
+                border-bottom: 0;
+            '
+            onclick='open_view_model_create_new_form(
+                `{$viewModel->create_form}`,
+                `{$viewModel->id}`,
+                `{$viewModel->api_key}`
+            )'
+        >";
+
+            $s .= "<i class='fa fa-plus'></i> ";
+
+            $s .= $btnLabel;
+
+            $s .= "</button>";
+        }
+
+        return $s;
+    }
+
 
     public function getRows(Request $request)
     {
@@ -282,12 +361,12 @@ class ViewModelController extends Controller
                                     $value = $row->$column ?? null;
                                 }
 
-                                $s .= "<td>{$value}</td>";
+                                $s .= "<td style='border-top: 0px;border-left: solid gray 1px;'>{$value}</td>";
                             } catch (\Throwable $e) {
                                 $s .= "<td>" . $e->getMessage() . "</td>";
                             }
                         }
-                        $s .= "<td>";
+                        $s .= "<td style='border: 0px'>";
                         if ($row->allow_update) {
                             $s .= "<i class='fa fa-edit btn btn-sm btn-success ml-1' onclick='open_view_model_form(`$viewModel->update_form`, `$viewModel->id`,`$row->id`, `$viewModel->api_key`)'></i>";
                         }
@@ -305,7 +384,7 @@ class ViewModelController extends Controller
                             'case_id' => $request->case_id,
                             'viewModel_id' => $viewModel->id,
                         ]);
-                        $s .= "<div class='card'>";
+                        $s .= "<div class=''>";
                         if ($row->allow_update) {
                             $s .= FormController::open($request, $viewModel->update_form, false);
                         } else {
@@ -315,18 +394,28 @@ class ViewModelController extends Controller
                     }
                 }
             }
+            $body = $s;
 
-            //
+            $footer = '';
+            $s = '';
             if ($viewModel->allow_create_row and count($rows) < $max_number_of_rows) {
-                $s .= "<tr>";
+                $s .= "";
                 $colspan = count($columns) + 1;
                 $btnLabel = trans('fields.Create new');
-                $s .= "<td colspan='{$colspan}'>";
+                $s .= "<div class='card-footer' colspan='{$colspan}'>";
                 $s .= "<button class='btn btn-sm btn-primary' onclick='open_view_model_create_new_form(`$viewModel->create_form`, `$viewModel->id`, `$viewModel->api_key`)'>";
-                $s .= "<i class='fa fa-plus' aria-hidden='true'></i>{$btnLabel}</button></td>";
-                $s .= "</tr>";
+                $s .= "<i class='fa fa-plus' aria-hidden='true'></i>{$btnLabel}</button></div>";
+                $s .= "";
             }
-            return $s;
+            $footer = $s;
+            $total = $body . $footer;
+
+
+            return [
+                'body' => $body,
+                'footer' => $footer,
+                'total' => $total,
+            ];
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -361,7 +450,7 @@ class ViewModelController extends Controller
                 $path = FileController::store($file, 'simpleWorkflow', true);
                 if ($path['status'] == 200) {
                     $data[$fieldName] = $path['dir'];
-                }else{
+                } else {
                     return response($path['message'], $path['status']);
                 }
             }
@@ -434,7 +523,7 @@ class ViewModelController extends Controller
                 }
             }
         } catch (Exception $th) {
-            return response($th->getMessage() . $th->getLine() , 500);
+            return response($th->getMessage() . $th->getLine(), 500);
         }
 
 
