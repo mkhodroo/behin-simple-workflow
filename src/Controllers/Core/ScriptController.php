@@ -35,7 +35,7 @@ class ScriptController extends Controller
         ]);
         $content = $request->content;
         if ($request->executive_file) {
-            $filePath = base_path('packages/behin-simple-workflow/src/Controllers/Scripts/' . $request->executive_file . '.php');
+            $filePath = base_path('vendor/behin/simple-workflow/src/Controllers/Scripts/' . $request->executive_file . '.php');
             if (!file_exists($filePath)) {
                 file_put_contents($filePath, '<?php');
                 $content = '<?php';
@@ -66,7 +66,7 @@ class ScriptController extends Controller
         // ]);
 
         if ($request->executive_file_content) {
-            $file = base_path('packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
+            $file = base_path('vendor/behin/simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
             file_put_contents($file, $request->executive_file_content);
             $script->update(['content' => $request->executive_file_content]);
             return redirect()->route('simpleWorkflow.scripts.edit', $script->id)->with('success', 'Script updated successfully.');
@@ -90,14 +90,14 @@ class ScriptController extends Controller
             $content = $script->content;
 
             if (!$content && $script->executive_file) {
-                $filePath = base_path('packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
+                $filePath = base_path('vendor/behin/simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
                 if (file_exists($filePath)) {
                     $content = file_get_contents($filePath);
                 }
             }
         }
 
-        $newFilePath = base_path('packages/behin-simple-workflow/src/Controllers/Scripts/' . $request->executive_file . '.php');
+        $newFilePath = base_path('vendor/behin/simple-workflow/src/Controllers/Scripts/' . $request->executive_file . '.php');
 
         if (file_exists($newFilePath)) {
             return response()->json([
@@ -241,7 +241,7 @@ class ScriptController extends Controller
         $executiveClass = "Behin\\SimpleWorkflow\\Controllers\\Scripts\\" . $script->executive_file . '.php';
 
         if (!$script->content && $script->executive_file) {
-            $filePath = base_path('packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
+            $filePath = base_path('vendor/behin/simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
             if (file_exists($filePath)) {
                 $content = file_get_contents($filePath);
                 $script->update(['content' => $content]);
