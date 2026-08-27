@@ -33,7 +33,8 @@ class Inbox extends Model
         'case_id',
         'actor',
         'status',
-        'case_name'
+        'case_name',
+        'done_at',
     ];
 
     public function scopeOpen($query)

@@ -126,6 +126,7 @@ class InboxController extends Controller
         } else {
             $inboxRow->status = $status;
         }
+        $inboxRow->done_at = now();
         $inboxRow->save();
     }
 
