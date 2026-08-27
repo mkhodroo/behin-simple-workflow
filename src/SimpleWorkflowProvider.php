@@ -3,7 +3,7 @@
 namespace Behin\SimpleWorkflow;
 
 use Illuminate\Support\ServiceProvider;
-use Behin\SimpleWorkflwo\Middlewares\RedirectOldRoute;
+use Behin\SimpleWorkflow\Middlewares\RedirectOldRoute;
 
 class SimpleWorkflowProvider extends ServiceProvider
 {
