@@ -15,7 +15,6 @@
 --inbox-bg: #f8fafc;
 }
 
-```
     .categorized-inbox-page {
         padding: 1.25rem 0 2rem;
     }
@@ -471,12 +470,30 @@
     .table-modern {
         border: 1px solid var(--inbox-border);
         border-radius: 16px;
-        overflow: hidden;
         background: #fff;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
     }
 
     .table-modern table {
         margin-bottom: 0 !important;
+        min-width: 850px;
+        width: 100%;
+    }
+
+    .table-modern::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-modern::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+    }
+
+    .table-modern::-webkit-scrollbar-track {
+        background: #f8fafc;
     }
 
     .table-modern thead {
@@ -744,6 +761,43 @@
         box-shadow: 0 0 0 3px rgba(37, 99, 235, .08);
     }
 
+    .dataTables-wrapper {
+        width: 100%;
+    }
+
+    .dataTables_wrapper .dataTables_filter {
+        float: none;
+        text-align: right;
+        margin-bottom: .75rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter label {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: .5rem;
+        margin: 0;
+        color: var(--inbox-muted);
+        font-size: .75rem;
+        font-weight: 700;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        width: min(320px, 100%);
+        min-height: 40px;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        background: #fff;
+    }
+
+    .dataTables_wrapper .dataTables_info {
+        padding-top: .75rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate {
+        padding-top: .5rem;
+    }
+
     .dataTables_wrapper .dataTables_info {
         color: #94a3b8;
         font-size: .72rem;
@@ -884,15 +938,48 @@
         .table-modern {
             border-radius: 12px;
         }
+
+        .table-modern {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .table-modern table {
+            min-width: 850px;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            width: 100%;
+            text-align: right;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: .35rem;
+            width: 100%;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            width: 100%;
+            min-height: 42px;
+            box-sizing: border-box;
+        }
+
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            float: none;
+            text-align: center;
+        }
     }
 </style>
-```
 
 @endsection
 
 @section('content') <div class="container-fluid categorized-inbox-page"> <div class="card categorized-inbox-card">
 
-```
         {{-- Header --}}
         <div class="inbox-header">
             <div class="inbox-header-content">
@@ -934,7 +1021,7 @@
             <div class="category-section">
 
                 <div class="section-label">
-                    <i class="fa fa-category"></i>
+                    <i class="fa fa-th-large"></i>
                     <span>{{ trans('fields.Switch Task') }}</span>
                 </div>
 
@@ -948,7 +1035,7 @@
                         <div class="chip-main">
 
                             <span class="chip-icon">
-                                <i class="fa fa-program"></i>
+                                <i class="fa fa-list"></i>
                             </span>
 
                             <span class="chip-label">
@@ -1042,7 +1129,7 @@
                     </div>
 
                     <button type="button" data-task-filter="">
-                        <i class="fa fa-close"></i>
+                        <i class="fa fa-times"></i>
                         {{ trans('fields.Clear Filter') }}
                     </button>
 
@@ -1065,7 +1152,7 @@
                         <div class="advanced-filter-title">
 
                             <div class="advanced-filter-icon">
-                                <i class="fa fa-true"></i>
+                                <i class="fa fa-filter"></i>
                             </div>
 
                             <div>
@@ -1200,14 +1287,14 @@
                 <div class="table-toolbar">
 
                     <div class="table-title">
-                        <i class="material-icons">format_list_bulleted</i>
+                        <i class="fa fa-list"></i>
                         <span>{{ trans('fields.Items Count') }}: {{ $rows->count() }}</span>
                     </div>
 
                 </div>
 
 
-                <div class="table-responsive table-modern">
+                <div class="table-modern">
 
                     <table class="table align-middle"
                         id="categorized-inbox-table">
@@ -1379,14 +1466,12 @@
 
     </div>
 </div>
-```
 
 @endsection
 
 @section('script') <script>
 const variableOptions = @json($availableVariables ?? []);
 
-```
     const operatorOptions = [{
             value: 'equals',
             label: '{{ trans('fields.Filter Operator Equals') }}'
@@ -1637,9 +1722,7 @@ const variableOptions = @json($availableVariables ?? []);
 
 
         row.innerHTML = `
-            <span class="input-group-text material-icons">
-                tune
-            </span>
+            <span class="input-group-text"><i class="fa fa-sliders"></i></span>
 
             <select class="form-select form-select-sm variable-select">
                 <option value="">
@@ -1664,9 +1747,7 @@ const variableOptions = @json($availableVariables ?? []);
                 class="btn btn-outline-danger btn-sm remove-condition"
                 title="{{ trans('fields.Remove') }}"
             >
-                <i class="material-icons fs-6">
-                    close
-                </i>
+                <i class="fa fa-times"></i>
             </button>
         `;
 
@@ -2135,19 +2216,28 @@ const variableOptions = @json($availableVariables ?? []);
 
                     lengthChange: false,
 
-                    responsive: true,
+                    responsive: false,
 
                     autoWidth: false,
+
+                    searching: true,
+
+                    dom: '<"dataTables-top"f>rt<"dataTables-bottom"ip>', 
 
                     columnDefs: [{
                         targets: 0,
                         orderable: false,
                         searchable: false
-                    }]
+                    }],
+                    initComplete: function() {
+                        const wrapper = $(this.api().table().container());
+                        wrapper.find('.dataTables_filter input')
+                            .attr('placeholder', '{{ trans('fields.Search') }}')
+                            .attr('aria-label', '{{ trans('fields.Search') }}');
+                    }
                 });
         }
     });
 </script>
-```
 
 @endsection
