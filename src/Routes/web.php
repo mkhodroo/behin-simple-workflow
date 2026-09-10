@@ -141,4 +141,4 @@ Route::post('workflow/update-view-model-record', [ViewModelController::class, 'u
 Route::post('workflow/get-view-model-rows', [ViewModelController::class, 'getRows'])->name('view-model.get-rows');
 
 Route::get('workflow/process/start/{taskId}/{force?}/{redirect?}/{inDraft?}', [ProcessController::class, 'start'])->name('simpleWorkflow.process.start')->middleware('web');
-Route::any('workflow/inbox/view/{inboxId}', [InboxController::class, 'view'])->name('simpleWorkflow.inbox.view')->middleware(['web']);
+Route::get('workflow/inbox/view/{inboxId}', [InboxController::class, 'view'])->name('simpleWorkflow.inbox.view')->middleware(['web']);
