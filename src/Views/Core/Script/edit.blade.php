@@ -5,8 +5,8 @@
 @endsection
 
 @php
-    <!-- $executive_file_content = $script->content;
-    if (!$executive_file_content && $script->executive_file) { -->
+    $executive_file_content = $script->content;
+    if ($script->executive_file) {
         $filePath = base_path(
             '../packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php',
         );
@@ -15,7 +15,7 @@
         } else {
             $executive_file_content = '';
         }
-    <!-- } -->
+    }
 @endphp
 
 @section('content')
