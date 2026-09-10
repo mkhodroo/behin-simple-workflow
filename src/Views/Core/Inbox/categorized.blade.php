@@ -1352,7 +1352,7 @@
 
                                         <div class="row-actions">
 
-                                            <a href="{{ route('simpleWorkflow.inbox.view', $row->id) }}"
+                                            <a href="{{ route('simpleWorkflow.inbox.view', ['id' => $row->id]) }}"
                                                 class="row-action view"
                                                 title="{{ trans('fields.View') }}">
 
