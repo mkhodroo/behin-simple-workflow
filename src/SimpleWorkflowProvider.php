@@ -14,6 +14,7 @@ class SimpleWorkflowProvider extends ServiceProvider
      */
     public function register()
     {
+        require_once __DIR__ . '/Helper/behin-simple-workflow.php';
         $this->mergeConfigFrom(__DIR__.'/config/workflow.php', 'workflow');
     }
 
