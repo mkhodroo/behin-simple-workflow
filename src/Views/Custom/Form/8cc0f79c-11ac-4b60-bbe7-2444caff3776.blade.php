@@ -59,20 +59,7 @@
 @endphp
 
 <style>
-/* فونت IRANSansX */
-@font-face {
-    font-family: 'IRANSansX';
-    src: url('https://opticpardaz.com/wp-content/themes/woodmart/theme-core/assets/fonts/IRSansx-Bold.woff2') format('woff2');
-    font-weight: 700;
-    font-style: normal;
-}
 
-@font-face {
-    font-family: 'IRANSansX';
-    src: url('https://opticpardaz.com/wp-content/themes/woodmart/theme-core/assets/fonts/IRSansx.woff2') format('woff2');
-    font-weight: 400;
-    font-style: normal;
-}
 
 .client-service-report,
 .client-service-report * {
