@@ -1618,6 +1618,21 @@
 
 <script>
     $(document).ready(function() {
+        /*
+         * ذخیره href لینک‌های گزارش قبل از اجرای اسکریپت حالت فقط‌خواندنی.
+         * وقتی وضعیت کارتابل done/doneByOther باشد، اسکریپت اصلی صفحه
+         * (Inbox/show.blade.php و Inbox/public-show.blade.php) مقدار href
+         * همه لینک‌های داخل فرم را حذف و pointer-events آن‌ها را غیرفعال می‌کند.
+         * این handler به دلیل قرارگیری در section محتوا، قبل از آن اجرا می‌شود.
+         */
+        $('.client-service-report a, .csr-nav-wrap.mobile-nav a').each(function() {
+            var $link = $(this);
+            var href = $link.attr('href');
+            if (href) {
+                $link.attr('data-csr-href', href);
+            }
+        });
+
         // مدیریت کلیک روی تب‌ها (هم سایدبار هم نویگیشن موبایل)
         $('[data-csr-tab]').on('click', function(event) {
             event.preventDefault();
@@ -1661,6 +1676,26 @@
         
         adjustMobilePadding();
         $(window).resize(adjustMobilePadding);
+    });
+
+    /*
+     * بازیابی لینک‌های گزارش (تب‌ها و لینک‌های دانلود/مشاهده فایل).
+     * رویداد load پنجره بعد از همه handler های document.ready اجرا می‌شود،
+     * بنابراین اگر اسکریپت حالت فقط‌خواندنی لینک‌ها را غیرفعال کرده باشد،
+     * در اینجا دوباره فعال می‌شوند. لینک‌های این گزارش صرفاً برای جابه‌جایی
+     * بین تب‌ها و دانلود فایل هستند و در حالت فقط‌خواندنی مشکلی ایجاد نمی‌کنند.
+     */
+    $(window).on('load', function() {
+        $('.client-service-report a, .csr-nav-wrap.mobile-nav a').each(function() {
+            var $link = $(this);
+            var savedHref = $link.attr('data-csr-href');
+            if (savedHref) {
+                if (!$link.attr('href')) {
+                    $link.attr('href', savedHref);
+                }
+                $link.css('pointer-events', 'auto');
+            }
+        });
     });
 
     function uploadPaymentReceipt() {
