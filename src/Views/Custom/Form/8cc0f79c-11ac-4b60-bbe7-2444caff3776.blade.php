@@ -54,7 +54,7 @@
             return null;
         }
 
-        return strpos($path, 'http') === 0 ? $path : url('public/' . ltrim($path, '/'));
+        return strpos($path, 'http') === 0 ? $path : url(ltrim($path, '/'));
     };
 @endphp
 
