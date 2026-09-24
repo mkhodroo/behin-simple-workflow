@@ -90,5 +90,14 @@ return [
     'Forms' => 'فرم ها',
     'Transfer cases to task' => 'انتقال کیس ها به تسک',
     'Task deleted successfully' => 'تسک با موفقیت حذف شد',
+    'Transfer inbox items' => 'انتقال کارهای این مرحله',
+    'From actor' => 'از کاربر',
+    'To actor' => 'به کاربر',
+    'Transfer' => 'انتقال',
+    'No open inboxes to transfer' => 'هیچ کار بازی برای این کاربر در این مرحله وجود ندارد.',
+    'Inboxes transferred successfully' => ':count کار از کارتابل منتقل شد.',
+    'Select from and to actors' => 'کاربر مبدأ و مقصد را درست انتخاب کنید.',
+    'Inbox transfer confirm' => ':count کار منتقل خواهد شد. آیا تأیید می‌کنید؟',
+    'Inbox transfer count failed' => 'شمارش کارها ناموفق بود. دوباره تلاش کنید.',
 
 ];

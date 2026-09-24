@@ -670,6 +670,41 @@
         </div>
     </div>
 
+    <form action="{{ route('simpleWorkflow.task.transferInboxes', $task->id) }}" method="POST"
+        id="transfer-inboxes-form" class="card shadow-sm material-subcard mt-4">
+        @csrf
+        <div class="card-header">
+            <h5 class="mb-0">
+                <span class="material-icons material-header-icon">swap_horiz</span>
+                {{ trans('fields.Transfer inbox items') }}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="md-form-group">
+                        <label for="from_actor">{{ trans('fields.From actor') }}</label>
+                        <input type="text" name="from_actor" id="from_actor" list="actors"
+                            class="form-control material-input" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="md-form-group">
+                        <label for="to_actor">{{ trans('fields.To actor') }}</label>
+                        <input type="text" name="to_actor" id="to_actor" list="actors"
+                            class="form-control material-input" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-start">
+            <button type="submit" class="btn btn-warning">
+                <span class="material-icons material-header-icon">swap_horiz</span>
+                {{ trans('fields.Transfer') }}
+            </button>
+        </div>
+    </form>
+
     <div class="card shadow-sm material-subcard mt-4">
         @include('SimpleWorkflowView::Core.TaskJump.edit', ['task' => $task])
     </div>
@@ -765,6 +800,39 @@
             if (success) {
                 window.parent.postMessage('task-updated', '*');
             }
+        }
+
+        const transferForm = document.getElementById('transfer-inboxes-form');
+        if (transferForm) {
+            transferForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const fromActor = document.getElementById('from_actor').value;
+                const toActor = document.getElementById('to_actor').value;
+                if (!fromActor || !toActor || fromActor === toActor) {
+                    alert('{{ trans('fields.Select from and to actors') }}');
+                    return;
+                }
+                const countUrl = '{{ route('simpleWorkflow.task.transferInboxes.count', $task->id) }}'
+                    + '?from_actor=' + encodeURIComponent(fromActor);
+                fetch(countUrl, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('count failed');
+                    }
+                    return response.json();
+                }).then(function (data) {
+                    const message = '{{ trans('fields.Inbox transfer confirm') }}'.replace(':count', data.count);
+                    if (confirm(message)) {
+                        transferForm.submit();
+                    }
+                }).catch(function () {
+                    alert('{{ trans('fields.Inbox transfer count failed') }}');
+                });
+            });
         }
     </script>
 @endsection

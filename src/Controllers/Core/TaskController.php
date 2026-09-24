@@ -3,6 +3,7 @@
 namespace Behin\SimpleWorkflow\Controllers\Core;
 
 use App\Http\Controllers\Controller;
+use Behin\SimpleWorkflow\Models\Core\Inbox;
 use Behin\SimpleWorkflow\Models\Core\Process;
 use Behin\SimpleWorkflow\Models\Core\Task;
 use Illuminate\Http\Request;
@@ -76,6 +77,42 @@ class TaskController extends Controller
 
         return redirect()->route('simpleWorkflow.task.index', ['process_id' => $processId])
             ->with('success', trans('fields.Task deleted successfully'));
+    }
+
+    public function countTransferInboxes(Request $request, Task $task)
+    {
+        $request->validate([
+            'from_actor' => 'required|exists:users,id',
+        ]);
+
+        $count = Inbox::where('task_id', $task->id)
+            ->where('actor', $request->from_actor)
+            ->open()
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
+    public function transferInboxes(Request $request, Task $task)
+    {
+        $request->validate([
+            'from_actor' => 'required|exists:users,id',
+            'to_actor' => 'required|exists:users,id|different:from_actor',
+        ]);
+
+        $query = Inbox::where('task_id', $task->id)
+            ->where('actor', $request->from_actor)
+            ->open();
+
+        $count = $query->count();
+
+        if ($count === 0) {
+            return redirect()->back()->with('error', trans('fields.No open inboxes to transfer'));
+        }
+
+        $query->update(['actor' => $request->to_actor]);
+
+        return redirect()->back()->with('success', trans('fields.Inboxes transferred successfully', ['count' => $count]));
     }
 
     public static function getById($id){

@@ -40,6 +40,8 @@ Route::name('simpleWorkflow.')->prefix('workflow')->middleware(['web', 'auth'])-
         Route::get('{task}/edit', [TaskController::class, 'edit'])->name('edit');
         Route::put('{task}/update', [TaskController::class, 'update'])->name('update');
         Route::delete('{task}/delete', [TaskController::class, 'destroy'])->name('delete');
+        Route::get('{task}/transfer-inboxes/count', [TaskController::class, 'countTransferInboxes'])->name('transferInboxes.count');
+        Route::post('{task}/transfer-inboxes', [TaskController::class, 'transferInboxes'])->name('transferInboxes');
 
         Route::get('actor/{taskId}', [TaskController::class, 'index'])->name('actor');
     });
