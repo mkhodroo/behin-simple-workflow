@@ -27,7 +27,11 @@ class SimpleWorkflowProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__. '/Migrations');
         $this->loadRoutesFrom(__DIR__ . '/Routes/web.php');
+        //گزارش کارتابل تسک‌ها (کاملا مجزا از سایر روت‌ها، کنترلرها و ویوها)
+        $this->loadRoutesFrom(__DIR__ . '/Report/Routes/report.php');
         $this->loadViewsFrom(__DIR__. '/Views', 'SimpleWorkflowView');
+        //ویوهای گزارش کارتابل تسک‌ها (مجزا)
+        $this->loadViewsFrom(__DIR__ . '/Report/Views', 'SimpleWorkflowReportView');
         $this->loadTranslationsFrom(__DIR__ . '/lang', 'SimpleWorkflowLang');
 
         //ریدایرکت اینباکس قدیمی به جدید
