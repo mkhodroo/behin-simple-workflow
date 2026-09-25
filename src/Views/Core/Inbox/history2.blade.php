@@ -551,18 +551,21 @@
                         </a>
 
                         @if ($firstRow)
-                            <a href="{{ route('simpleWorkflow.inbox.cancel', $firstRow->id) }}"
-                                class="btn btn-sm btn-danger">
-                                کنسل کردن پرونده
-                            </a>
-
-                            <form action="{{ route('simpleWorkflow.inbox.uncanceledCase', $firstRow->case->id) }}"
-                                method="POST" style="display:inline">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-warning">
-                                    در دست بررسی کردن پرونده
-                                </button>
-                            </form>
+                            @if(access('کنسل کردن پرونده در تاریخچه'))
+                                <a href="{{ route('simpleWorkflow.inbox.cancel', $firstRow->id) }}"
+                                    class="btn btn-sm btn-danger">
+                                    کنسل کردن پرونده
+                                </a>
+                            @endif
+                            @if(access('در دست بررسی کردن پرونده در تاریخچه'))
+                                <form action="{{ route('simpleWorkflow.inbox.uncanceledCase', $firstRow->case->id) }}"
+                                    method="POST" style="display:inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        در دست بررسی کردن پرونده
+                                    </button>
+                                </form>
+                            @endif
                         @endif
                     </div>
 
