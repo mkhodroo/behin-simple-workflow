@@ -14,15 +14,21 @@
                         class="btn btn-sm btn-success">
                         نسخه ۲ (تایم‌لاین)
                     </a>
-                    <a href="{{ route('simpleWorkflow.inbox.cancel', $rows[0]->id) }}" class="btn btn-sm btn-danger">
-                        کنسل کردن پرونده
-                    </a>
-                    <form action="{{ route('simpleWorkflow.inbox.uncanceledCase', $rows[0]->case->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-warning">
-                            در دست بررسی کردن پرونده
-                        </button>
-                    </form>
+                    
+                    @if(access('کنسل کردن پرونده در تاریخچه'))
+                        <a href="{{ route('simpleWorkflow.inbox.cancel', $rows[0]->id) }}" class="btn btn-sm btn-danger">
+                            کنسل کردن پرونده
+                        </a>
+                    @endif
+
+                    @if(access('در دست بررسی کردن پرونده در تاریخچه'))
+                        <form action="{{ route('simpleWorkflow.inbox.uncanceledCase', $rows[0]->case->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                در دست بررسی کردن پرونده
+                            </button>
+                        </form>
+                    @endif
                 </div>
                 <div class="card-body">
                     <table class="table table-stripped">
