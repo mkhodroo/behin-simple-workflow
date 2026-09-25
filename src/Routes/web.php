@@ -94,6 +94,7 @@ Route::name('simpleWorkflow.')->prefix('workflow')->middleware(['web', 'auth'])-
         Route::get('cancel/{inboxId}', [InboxController::class, 'cancel'])->name('cancel');
         Route::get('delete/{inboxId}', [InboxController::class, 'delete'])->name('delete');
         Route::get('case-history/{caseNumber?}', [InboxController::class, 'caseHistory'])->name('caseHistoryView');
+        Route::get('case-history-v2/{caseNumber?}', [InboxController::class, 'caseHistoryV2'])->name('caseHistoryViewV2');
         Route::post('uncanceled-case/{caseId}', [CaseController::class, 'uncanceledCase'])
             ->name('uncanceledCase');
         Route::get('copy/{inboxId}', [CopyInboxController::class, 'copy'])

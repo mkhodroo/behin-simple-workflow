@@ -436,6 +436,75 @@ class InboxController extends Controller
         return view('SimpleWorkflowView::Core.Inbox.history', compact('rows'));
     }
 
+    /**
+     * نسخه دوم تاریخچه: نمایش تایم‌لاین
+     *
+     * تسک‌هایی که در یک زمان (دقیقه) شروع شده‌اند در یک نقطه از تایم‌لاین
+     * و به صورت یک گروه نمایش داده می‌شوند.
+     */
+    public static function caseHistoryV2($caseNumber)
+    {
+        $caseModels = CaseController::getAllByCaseNumber($caseNumber);
+        $caseIds = $caseModels->pluck('id');
+        $rows = Inbox::whereIn('case_id', $caseIds)
+            ->with(['task.process', 'case'])
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+
+        $timeline = self::buildTimeline($rows);
+
+        return view('SimpleWorkflowView::Core.Inbox.history2', [
+            'rows' => $rows,
+            'timeline' => $timeline,
+            'caseNumber' => $caseNumber,
+        ]);
+    }
+
+    /**
+     * گروه‌بندی رکوردهای اینباکس بر اساس زمان شروع (دقیقه)
+     *
+     * @param \Illuminate\Support\Collection $rows
+     * @return \Illuminate\Support\Collection
+     */
+    public static function buildTimeline($rows)
+    {
+        return $rows
+            ->groupBy(function ($row) {
+                return Carbon::parse($row->created_at)->format('Y-m-d H:i');
+            })
+            ->map(function ($items, $key) {
+                $first = $items->first();
+                $lastDone = $items
+                    ->filter(function ($item) {
+                        return $item->updated_at != $item->created_at;
+                    })
+                    ->sortBy('updated_at')
+                    ->last();
+
+                $duration = null;
+                if ($lastDone) {
+                    $duration = Carbon::parse($first->created_at)
+                        ->diffInSeconds(Carbon::parse($lastDone->updated_at));
+                }
+
+                return [
+                    'key' => $key,
+                    'items' => $items->values(),
+                    'count' => $items->count(),
+                    'date' => toJalali($first->created_at)->format('Y/m/d'),
+                    'time' => toJalali($first->created_at)->format('H:i'),
+                    'created_at' => $first->created_at,
+                    'done_at' => $lastDone ? $lastDone->updated_at : null,
+                    'duration' => $duration,
+                    'is_open' => $items->contains(function ($item) {
+                        return config("workflow.inboxStatus.{$item->status}.type") === 'open';
+                    }),
+                ];
+            })
+            ->values();
+    }
+
     public static function caseHistoryList($caseNumber, $limit = null)
     {
         $cases = CaseController::getAllByCaseNumber($caseNumber)->pluck('id');

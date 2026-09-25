@@ -10,6 +10,10 @@
             <div class="card table-responsive">
                 <div class="card-header bg-info">
                     {{-- تاریخچه انجام کار پرونده شماره {{ $rows[0]->case->number }} --}}
+                    <a href="{{ route('simpleWorkflow.inbox.caseHistoryViewV2', ['caseNumber' => $rows[0]->case->number]) }}"
+                        class="btn btn-sm btn-success">
+                        نسخه ۲ (تایم‌لاین)
+                    </a>
                     <a href="{{ route('simpleWorkflow.inbox.cancel', $rows[0]->id) }}" class="btn btn-sm btn-danger">
                         کنسل کردن پرونده
                     </a>
