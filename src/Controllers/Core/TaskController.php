@@ -3,6 +3,7 @@
 namespace Behin\SimpleWorkflow\Controllers\Core;
 
 use App\Http\Controllers\Controller;
+use Behin\SimpleWorkflow\Elements\ElementRegistry;
 use Behin\SimpleWorkflow\Models\Core\Inbox;
 use Behin\SimpleWorkflow\Models\Core\Process;
 use Behin\SimpleWorkflow\Models\Core\Task;
@@ -13,20 +14,22 @@ class TaskController extends Controller
     public function index($process_id)
     {
         $process = ProcessController::getById($process_id);
-        $forms = FormController::getAll();
-        $scripts = ScriptController::getAll();
-        $conditions = ConditionController::getAll();
+        $elements = app(ElementRegistry::class);
         return view('SimpleWorkflowView::Core.Task.create')->with([
             'process' => $process,
-            'forms' => $forms,
-            'scripts'=> $scripts,
-            'conditions'=> $conditions,
+            'forms' => FormController::getAll(),
+            'scripts'=> ScriptController::getAll(),
+            'conditions'=> ConditionController::getAll(),
+            'elementRegistry' => $elements,
+            'elementOptions' => $elements->options(),
+            'elementDiagramStyles' => $elements->diagramStyles(),
         ]);
     }
 
     public function create(Request $request)
     {
         $data = $request->all();
+        $data['type'] = $this->validatedType($request->input('type'));
         $data['is_preview'] = true;
         $data['show_save_button'] = $request->boolean('show_save_button');
         $data['show_reminder_button'] = $request->boolean('show_reminder_button');
@@ -41,17 +44,38 @@ class TaskController extends Controller
 
     public function edit(Task $task)
     {
-        return view('SimpleWorkflowView::Core.Task.edit', compact('task'));
+        $registry = app(ElementRegistry::class);
+        return view('SimpleWorkflowView::Core.Task.edit', [
+            'task' => $task,
+            'taskElement' => $registry->forTask($task),
+        ]);
+    }
+
+    /** فهرست ستون‌هایی که برای نوع المان این تسک مجاز به‌روزرسانی هستند. */
+    protected function updatableFields(Request $request, Task $task)
+    {
+        $base = [
+            'name', 'parent_id', 'next_element_id', 'assignment_type', 'case_name', 'color', 'background',
+            'duration', 'order', 'number_of_task_to_back', 'script_before_open', 'allow_cancel', 'is_preview',
+            'show_save_button', 'show_reminder_button',
+        ];
+
+        // ستون‌های اختصاصی المان (مثل executive_element_id یا فیلدهای زمان‌بندی)
+        $elementFields = app(ElementRegistry::class)->settingFieldsFor($task->type);
+
+        $fields = array_values(array_unique(array_merge($base, $elementFields)));
+
+        // فقط ستون‌هایی که واقعاً در مدل وجود دارند و مجاز به‌روزرسانی هستند
+        return array_values(array_intersect($fields, (new Task)->getFillable()));
     }
 
     public function update(Request $request, Task $task)
     {
-        $data = $request->only('name', 'executive_element_id', 'parent_id', 'next_element_id', 'assignment_type', 'case_name', 'color', 'background', 'duration', 'order', 'timing_type', 'timing_value', 'timing_key_name', 'number_of_task_to_back', 'script_before_open', 'allow_cancel', 'is_preview', 'show_save_button', 'show_reminder_button');
+        $data = $request->only($this->updatableFields($request, $task));
         $data['is_preview'] = $request->boolean('is_preview');
         $data['show_save_button'] = $request->boolean('show_save_button');
         $data['show_reminder_button'] = $request->boolean('show_reminder_button');
         $task->update($data);
-        // self::getById($request->id)->update($request->all());
         return redirect()->back()->with('success', trans('Updated Successfully'));
     }
 
@@ -158,37 +182,29 @@ class TaskController extends Controller
         if ($task->is_preview) {
             return false;
         }
-        $hasError = 0;
-        if($task->type == 'form'){
-            // $hasError++;
-            if($task->actors()->count() == 0 and $task->assignment_type != 'public'){
-                $hasError++;
-                $descriptions = trans('fields.don\'t have actor');
-            }
-            if($task->assignment_type == null){
-                $hasError++;
-                $descriptions = trans('fields.don\'t have assignment type');
-            }
-        }
-        if($task->type == 'condition'){
-            if($task->executive_element_id == null){
-                $hasError++;
-                $descriptions = trans('fields.don\'t have executive element');
-            }
-        }
-        if($task->type == 'script'){
-            if($task->executive_element_id == null){
-                $hasError++;
-                $descriptions = trans('fields.don\'t have executive element');
-            }
-        }
-        if($hasError > 0){
+
+        $errors = app(ElementRegistry::class)->validate($task);
+
+        if (count($errors) > 0) {
             return [
-                'hasError' => $hasError,
-                'descriptions' => $descriptions,
+                'hasError' => count($errors),
+                'descriptions' => $errors,
             ];
         }
+
         return false;
+    }
+
+    /**
+     * بررسی اینکه نوع ارسالی یکی از المان‌های ثبت‌شده در رجیستری هست یا نه.
+     */
+    protected function validatedType(?string $type): string
+    {
+        $registry = app(ElementRegistry::class);
+
+        abort_if(!$registry->has($type), 422, 'Unknown element type: ' . (string) $type);
+
+        return $type;
     }
 
 }

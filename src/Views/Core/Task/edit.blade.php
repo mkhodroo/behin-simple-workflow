@@ -255,34 +255,17 @@
 @endsection
 
 @php
-    $forms = getProcessForms();
-    $scripts = getProcessScripts();
-    $conditions = getProcessConditions();
-    $bgColor = '';
-    if ($task->type == 'form') {
-        $bgColor = 'primary';
-    }
-    if ($task->type == 'script') {
-        $bgColor = 'success';
-    }
-    if ($task->type == 'condition') {
-        $bgColor = 'warning';
-    }
-    if ($task->type == 'end') {
-        $bgColor = 'danger';
-    }
-    if ($task->type == 'timed_condition') {
-        $bgColor = 'info';
-    }
-    $executiveEditRoute = null;
-    if ($task->type == 'form' && $task->executive_element_id) {
-        $executiveEditRoute = route('simpleWorkflow.form.edit', ['id' => $task->executive_element_id]);
-    } elseif ($task->type == 'script' && $task->executive_element_id) {
-        $executiveEditRoute = route('simpleWorkflow.scripts.edit', ['script' => $task->executive_element_id]);
-    } elseif (in_array($task->type, ['condition', 'timed_condition']) && $task->executive_element_id) {
-        $executiveEditRoute = route('simpleWorkflow.conditions.edit', ['condition' => $task->executive_element_id]);
-    }
-    $isTimedCondition = $task->type == 'timed_condition';
+    // رنگ، روت و مدل المان از رجیستری المان‌ها خوانده می‌شود
+    $taskElement = $taskElement ?? $task->element();
+    $bgColor = $taskElement?->bootstrapColor() ?? 'secondary';
+    $elementLabel = $taskElement ? trans($taskElement->label()) : ucfirst((string) $task->type);
+    $executiveEditRoute = $taskElement?->executiveEditRoute($task->executive_element_id);
+
+    // لیست المان‌های اجرایی بر اساس مدلی که المان اعلام کرده است
+    $executiveModel = $taskElement?->executiveModelClass();
+    $executiveItems = $executiveModel ? $executiveModel::orderBy('created_at', 'desc')->get() : collect();
+
+    $isTimedCondition = in_array('timing_type', $taskElement?->taskSettingFields() ?? [], true);
 @endphp
 @section('content')
     @if (session('error'))
@@ -312,7 +295,7 @@
                 {{ $task->name }}
             </h5>
             <div class="d-flex align-items-center">
-                <span class="badge bg-{{ $bgColor }}">{{ ucfirst($task->type) }}</span>
+                <span class="badge bg-{{ $bgColor }}">{{ $elementLabel }}</span>
                 <span class="badge {{ $task->is_preview ? 'bg-secondary text-dark ml-2' : 'bg-success ml-2' }}">
                     {{ $task->is_preview ? trans('fields.Preview Mode') : trans('fields.Published') }}
                 </span>
@@ -443,30 +426,12 @@
                                 <select name="executive_element_id" id="executive_element_id"
                                     class="form-control material-select select2">
                                     <option value="">{{ trans('Select an option') }}</option>
-                                    @if ($task->type == 'form')
-                                        @foreach ($forms as $form)
-                                            <option value="{{ $form->id }}"
-                                                {{ $form->id == $task->executive_element_id ? 'selected' : '' }}>
-                                                {{ $form->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                    @if ($task->type == 'script')
-                                        @foreach ($scripts as $script)
-                                            <option value="{{ $script->id }}"
-                                                {{ $script->id == $task->executive_element_id ? 'selected' : '' }}>
-                                                {{ $script->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                    @if (in_array($task->type, ['condition', 'timed_condition']))
-                                        @foreach ($conditions as $condition)
-                                            <option value="{{ $condition->id }}"
-                                                {{ $condition->id == $task->executive_element_id ? 'selected' : '' }}>
-                                                {{ $condition->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
+                                    @foreach ($executiveItems as $executiveItem)
+                                        <option value="{{ $executiveItem->id }}"
+                                            {{ $executiveItem->id == $task->executive_element_id ? 'selected' : '' }}>
+                                            {{ $executiveItem->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                                 @if ($executiveEditRoute)
                                     <a href="{{ $executiveEditRoute }}" class="material-link">

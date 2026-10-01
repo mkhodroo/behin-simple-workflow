@@ -1,14 +1,9 @@
 @foreach ($children as $child)
     @php
-        // تعیین کلاس هر نوع تسک
-        switch ($child->type) {
-            case 'form': $taskClass = 'task-form'; $shapeStart = '('; $shapeEnd = ')'; break;
-            case 'script': $taskClass = 'task-script'; $shapeStart = '['; $shapeEnd = ']'; break;
-            case 'condition': $taskClass = 'task-condition'; $shapeStart = '{'; $shapeEnd = '}'; break;
-            // case 'end': $taskClass = 'task-end'; $shapeStart = '(('; $shapeEnd = '))'; break;
-            case 'timed_condition': $taskClass = 'task-timed_condition'; $shapeStart = '['; $shapeEnd = ']'; break;
-            default: $taskClass = 'task-default'; $shapeStart = '['; $shapeEnd = ']'; break;
-        }
+        // کلاس، شکل و رنگ نود از المان ثبت‌شده در رجیستری المان‌ها گرفته می‌شود
+        $childElement = $child->element();
+        $taskClass = $childElement?->diagramClass() ?? 'task-default';
+        [$shapeStart, $shapeEnd] = $childElement?->diagramShape() ?? ['[', ']'];
         $taskName = $child->name . ($child->is_preview ? ' (' . trans('fields.Preview') . ')' : '');
     @endphp
 

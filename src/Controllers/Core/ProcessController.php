@@ -3,13 +3,11 @@
 namespace Behin\SimpleWorkflow\Controllers\Core;
 
 use App\Http\Controllers\Controller;
+use Behin\SimpleWorkflow\Elements\ElementRegistry;
 use Behin\SimpleWorkflow\Models\Core\Process;
 use Behin\SimpleWorkflow\Models\Core\TaskActor;
 use Behin\SimpleWorkflow\Models\Core\Task;
 use Behin\SimpleWorkflow\Models\Core\TaskJump;
-use Behin\SimpleWorkflow\Models\Core\Form;
-use Behin\SimpleWorkflow\Models\Core\Script;
-use Behin\SimpleWorkflow\Models\Core\Condition;
 use BehinUserRoles\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -158,6 +156,48 @@ class ProcessController extends Controller
         return self::start($taskId, true, false, false, $caseNumber, $creator, $parentId);
     }
 
+    /**
+     * ساخت بخش «executive» یک تسک برای اکسپورت؛ ستون‌ها را المان خودش اعلام می‌کند.
+     */
+    public static function exportExecutiveElement(Task $task)
+    {
+        $executive = $task->executiveElement();
+        $element = $task->element();
+
+        if (!$executive || !$element) {
+            return null;
+        }
+
+        return Arr::only($executive->toArray(), $element->exportColumns());
+    }
+
+    /**
+     * ساخت/به‌روزرسانی المان اجرایی یک تسک هنگام ایمپورت.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public static function importExecutiveElement(array $executive, ?string $type)
+    {
+        $element = app(ElementRegistry::class)->get($type);
+        $modelClass = $element?->executiveModelClass();
+
+        if (!$modelClass) {
+            return null;
+        }
+
+        $data = Arr::only($executive, $element->importColumns());
+
+        $existing = !empty($executive['id']) ? $modelClass::find($executive['id']) : null;
+
+        if ($existing) {
+            $existing->update($data);
+
+            return $existing;
+        }
+
+        return $modelClass::create($data);
+    }
+
     public function exportView($processId): View
     {
         $process = Process::findOrFail($processId);
@@ -169,17 +209,9 @@ class ProcessController extends Controller
             $taskArr['actors'] = $task->actors()->get()->toArray();
             $taskArr['jumps'] = $task->jumps()->get()->toArray();
 
-            $executive = $task->executiveElement();
+            $executive = self::exportExecutiveElement($task);
             if ($executive) {
-                switch ($task->type) {
-                    case 'form':
-                    case 'script':
-                        $taskArr['executive'] = Arr::only($executive->toArray(), ['id', 'name', 'executive_file', 'content']);
-                        break;
-                    case 'condition':
-                        $taskArr['executive'] = Arr::only($executive->toArray(), ['id', 'name', 'content', 'next_if_true']);
-                        break;
-                }
+                $taskArr['executive'] = $executive;
             }
 
             $data['tasks'][] = $taskArr;
@@ -208,17 +240,9 @@ class ProcessController extends Controller
             $taskArr = $task->toArray();
             $taskArr['actors'] = $task->actors()->get()->toArray();
             $taskArr['jumps'] = $task->jumps()->get()->toArray();
-            $executive = $task->executiveElement();
+            $executive = self::exportExecutiveElement($task);
             if ($executive) {
-                switch ($task->type) {
-                    case 'form':
-                    case 'script':
-                        $taskArr['executive'] = Arr::only($executive->toArray(), ['id', 'name', 'executive_file', 'content']);
-                        break;
-                    case 'condition':
-                        $taskArr['executive'] = Arr::only($executive->toArray(), ['id', 'name', 'content', 'next_if_true']);
-                        break;
-                }
+                $taskArr['executive'] = $executive;
             }
             $data['tasks'][] = $taskArr;
         }
@@ -262,8 +286,9 @@ class ProcessController extends Controller
                     'parent_old' => $parentOld,
                     'next_old' => $nextOld,
                     'jumps' => $jumps,
-                    'condition' => null,
-                    'condition_next_old' => null,
+                    'element' => $newTask->element(),
+                    'executive_data' => $executive,
+                    'executive_model' => null,
                 ];
 
                 foreach ($actors as $actor) {
@@ -273,50 +298,18 @@ class ProcessController extends Controller
                     ]);
                 }
                 if ($executive) {
-                    switch ($task['type'] ?? null) {
-                        case 'form':
-                            $formData = Arr::only($executive, ['name', 'executive_file', 'content']);
-                            $form = null;
-                            if (!empty($executive['id']) && ($existing = Form::find($executive['id']))) {
-                                $existing->update($formData);
-                                $form = $existing;
-                            } else {
-                                $form = Form::create($formData);
-                            }
-                            $newTask->executive_element_id = $form->id;
-                            $newTask->save();
-                            break;
-                        case 'script':
-                            $scriptData = Arr::only($executive, ['name', 'executive_file', 'content']);
-                            $script = null;
-                            if (!empty($executive['id']) && ($existing = Script::find($executive['id']))) {
-                                $existing->update($scriptData);
-                                $script = $existing;
-                            } else {
-                                $script = Script::create($scriptData);
-                            }
-                            $newTask->executive_element_id = $script->id;
-                            $newTask->save();
-                            break;
-                        case 'condition':
-                            $nextIfTrueOld = $executive['next_if_true'] ?? null;
-                            $condData = Arr::only($executive, ['name', 'content']);
-                            $condData['next_if_true'] = null;
-                            $condition = null;
-                            if (!empty($executive['id']) && ($existing = Condition::find($executive['id']))) {
-                                $existing->update($condData);
-                                $condition = $existing;
-                            } else {
-                                $condition = Condition::create($condData);
-                            }
-                            $newTask->executive_element_id = $condition->id;
-                            $newTask->save();
-                            $tasksMap[$oldId]['condition'] = $condition;
-                            $tasksMap[$oldId]['condition_next_old'] = $nextIfTrueOld;
-                            break;
+                    $executiveModel = self::importExecutiveElement($executive, $newTask->type);
+
+                    if ($executiveModel) {
+                        $newTask->executive_element_id = $executiveModel->id;
+                        $newTask->save();
+                        $tasksMap[$oldId]['executive_model'] = $executiveModel;
                     }
                 }
             }
+
+            // نگاشت نهایی تسک‌ها: شناسهٔ قدیمی => مدل تسک جدید
+            $flatTasksMap = collect($tasksMap)->map(fn ($entry) => $entry['model'])->all();
 
             foreach ($tasksMap as $oldId => $entry) {
                 $task = $entry['model'];
@@ -340,9 +333,14 @@ class ProcessController extends Controller
                         ]);
                     }
                 }
-                if ($entry['condition'] && $entry['condition_next_old'] && isset($tasksMap[$entry['condition_next_old']])) {
-                    $entry['condition']->next_if_true = $tasksMap[$entry['condition_next_old']]['model']->id;
-                    $entry['condition']->save();
+
+                // المان اجرایی خودش تصمیم می‌گیرد با ارجاع‌هایش به تسک‌های دیگر چه کند
+                if ($entry['element']) {
+                    $entry['element']->afterImport(
+                        $entry['executive_model'],
+                        (array) ($entry['executive_data'] ?? []),
+                        $flatTasksMap
+                    );
                 }
             }
         });

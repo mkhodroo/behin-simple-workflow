@@ -105,9 +105,11 @@
         var url = "{{ route('simpleWorkflow.view-model.update-record') }}"
         send_ajax_formdata_request(url, fd, function(response) {
             show_message(response)
-            console.log(response)
+
+            // ✅ ابتدا مودال بسته می‌شود، سپس لیست رکوردها رفرش می‌گردد
+            close_admin_modal(modalId)
+
             get_view_model_rows('{{ $viewModel->id }}', '{{ $viewModel->api_key }}')
-            close_admin_modal('{{ $viewModel->id }}')
         })
     }
 </script>

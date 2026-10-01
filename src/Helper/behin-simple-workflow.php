@@ -27,6 +27,22 @@ if (!function_exists('getProcesses')) {
     }
 }
 
+if (!function_exists('workflowElements')) {
+    /**
+     * رجیستری المان‌های فرایند.
+     *
+     * نمونه:
+     *   workflowElements()->options();                       // ['form' => 'Form', ...]
+     *   workflowElements()->get('form');                     // FormElement
+     *   workflowElements()->has('notification');             // bool
+     *   workflowElements()->keys();                          // کلیدهای المان‌ها
+     */
+    function workflowElements(): \Behin\SimpleWorkflow\Elements\ElementRegistry
+    {
+        return app(\Behin\SimpleWorkflow\Elements\ElementRegistry::class);
+    }
+}
+
 if (!function_exists('getCases')) {
     function getCases()
     {

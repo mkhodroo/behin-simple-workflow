@@ -2,9 +2,7 @@
 
 namespace Behin\SimpleWorkflow\Models\Core;
 
-use Behin\SimpleWorkflow\Controllers\Core\ConditionController;
-use Behin\SimpleWorkflow\Controllers\Core\FormController;
-use Behin\SimpleWorkflow\Controllers\Core\ScriptController;
+use Behin\SimpleWorkflow\Elements\ElementRegistry;
 use Behin\SimpleWorkflow\Controllers\Core\TaskController;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -94,15 +92,21 @@ class Task extends Model
 
     public function executiveElement()
     {
-        if ($this->type == 'form') {
-            return FormController::getById($this->executive_element_id);
+        $element = app(ElementRegistry::class)->forTask($this);
+
+        if (!$element || !$element->hasExecutiveElement()) {
+            return null;
         }
-        if ($this->type == 'script') {
-            return ScriptController::getById($this->executive_element_id);
-        }
-        if ($this->type == 'condition') {
-            return ConditionController::getById($this->executive_element_id);
-        }
+
+        $modelClass = $element->executiveModelClass();
+
+        return $modelClass ? $modelClass::find($this->executive_element_id) : null;
+    }
+
+    /** المان (نوع تسک) این تسک؛ برای بررسی وجود و رنگ و برچسب المان. */
+    public function element()
+    {
+        return app(ElementRegistry::class)->forTask($this);
     }
 
     public function nextTask()

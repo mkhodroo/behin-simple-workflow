@@ -2,6 +2,9 @@
 
 namespace Behin\SimpleWorkflow;
 
+use Behin\SimpleWorkflow\Console\Commands\ListElementsCommand;
+use Behin\SimpleWorkflow\Console\Commands\MakeElementCommand;
+use Behin\SimpleWorkflow\Elements\ElementRegistry;
 use Behin\SimpleWorkflow\Middlewares\RedirectOldRoutes;
 use Illuminate\Support\ServiceProvider;
 
@@ -16,6 +19,21 @@ class SimpleWorkflowProvider extends ServiceProvider
     {
         require_once __DIR__ . '/Helper/behin-simple-workflow.php';
         $this->mergeConfigFrom(__DIR__.'/config/workflow.php', 'workflow');
+
+        // المان‌های پیش‌فرض پکیج + المان‌هایی که اپ در config/workflow.php تعریف کرده است.
+        $defaultElements = require __DIR__.'/config/elements.php';
+        $this->app['config']->set('workflow.element_defaults', $defaultElements);
+
+        // رجیستری المان‌ها: کلید singleton به نام workflow.elements و دسترسی از طریق app(ElementRegistry::class)
+        $this->app->singleton('workflow.elements', function ($app) {
+            $definitions = array_merge(
+                $app['config']->get('workflow.element_defaults', []),
+                $app['config']->get('workflow.elements', [])
+            );
+
+            return ElementRegistry::make($definitions);
+        });
+        $this->app->alias('workflow.elements', ElementRegistry::class);
     }
 
     /**
@@ -39,5 +57,13 @@ class SimpleWorkflowProvider extends ServiceProvider
             'web',
             RedirectOldRoutes::class
         );
+
+        //دستورهای کنسولی مدیریت المان‌های فرایند
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                MakeElementCommand::class,
+                ListElementsCommand::class,
+            ]);
+        }
     }
 }

@@ -10,88 +10,15 @@
         });
     </script>
     <style>
-        .task-form rect {
-            fill: #007bff !important;
-            /* آبی برای تسک‌های نوع فرم */
-            stroke: #0056b3 !important;
-            /* حاشیه تیره‌تر */
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-script rect {
-            fill: #28a745 !important;
-            /* سبز برای تسک‌های نوع اسکریپت */
-            stroke: #1e7e34 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-condition rect,
-        polygon {
-            fill: #ffc107 !important;
-            /* زرد برای سایر تسک‌ها */
-            stroke: #d39e00 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-end rect {
-            fill: #f10808 !important;
-            /* زرد برای سایر تسک‌ها */
-            stroke: #d30000 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-timed_condition rect {
-            fill: #8408f1 !important;
-            /* زرد برای سایر تسک‌ها */
-            stroke: #6d00d3 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-form {
-            fill: #007bff !important;
-            /* آبی برای تسک‌های نوع فرم */
-            stroke: #0056b3 !important;
-            /* حاشیه تیره‌تر */
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-script {
-            fill: #28a745 !important;
-            /* سبز برای تسک‌های نوع اسکریپت */
-            stroke: #1e7e34 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-condition {
-            fill: #ffc107 !important;
-            /* زرد برای سایر تسک‌ها */
-            stroke: #d39e00 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-end {
-            fill: #f10808 !important;
-            /* زرد برای سایر تسک‌ها */
-            stroke: #d30000 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
-
-        .task-timed_condition {
-            fill: #8408f1 !important;
-            /* زرد برای سایر تسک‌ها */
-            stroke: #6d00d3 !important;
-            font-family: Vazir !important;
-            color: white !important;
-        }
+        {{-- استایل نودهای دیاگرام به‌صورت پویا از رجیستری المان‌ها ساخته می‌شود --}}
+        @foreach ($elementDiagramStyles ?? [] as $style)
+            .{{ $style['class'] }} {
+                fill: {{ $style['fill'] }} !important;
+                stroke: {{ $style['stroke'] }} !important;
+                font-family: Vazir !important;
+                color: white !important;
+            }
+        @endforeach
     </style>
     <div class="card">
         <div class="card-header">
@@ -106,23 +33,12 @@
                 graph TD
                 @foreach ($process->startTasks() as $task)
                     @php
-                        if ($task->type == 'form') {
-                            $taskClass = 'task-form';
-                        }
-                        if ($task->type == 'script') {
-                            $taskClass = 'task-script';
-                        }
-                        if ($task->type == 'condition') {
-                            $taskClass = 'task-condition';
-                        }
-                        if ($task->type == 'end') {
-                            $taskClass = 'task-end';
-                        }
-                        if ($task->type == 'timed_condition') {
-                            $taskClass = 'task-timed_condition';
-                        }
+                        // کلاس و شکل نود از المان ثبت‌شده در رجیستری گرفته می‌شود
+                        $taskElement = $task->element();
+                        $taskClass = $taskElement?->diagramClass() ?? 'task-default';
+                        [$shapeStart, $shapeEnd] = $taskElement?->diagramShape() ?? ['[', ']'];
                     @endphp
-                    {{ $task->id }}("{{ $task->name }}"):::{{ $taskClass }}
+                    {{ $task->id }}{{ $shapeStart }}"{{ $task->name }}"{{ $shapeEnd }}:::{{ $taskClass }}
                     click {{ $task->id }} "{{ route('simpleWorkflow.task.edit', $task->id) }}"
                     @php
                         $children = $task->children();
@@ -171,11 +87,10 @@
                 <label for="type" class="col-sm-2 col-form-label">{{ trans('Task Type') }}</label>
                 <div class="col-sm-10">
                     <select name="type" id="type" class="form-select">
-                        <option value="form">{{ trans('Form') }}</option>
-                        <option value="condition">{{ trans('Condition') }}</option>
-                        <option value="script">{{ trans('Script') }}</option>
-                        <option value="end">{{ trans('End') }}</option>
-                        <option value="timed_condition">{{ trans('Timed Condition') }}</option>
+                        {{-- گزینه‌های نوع تسک از رجیستری المان‌ها خوانده می‌شود --}}
+                        @foreach ($elementOptions ?? [] as $elementKey => $elementLabel)
+                            <option value="{{ $elementKey }}">{{ $elementLabel }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>

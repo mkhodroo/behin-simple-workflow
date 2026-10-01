@@ -5,7 +5,7 @@
 
 @foreach ($children as $child)
     @php
-        $bgColor = $child->type == 'form' ? 'bg-primary' : ($child->type == 'script' ? 'bg-success' : 'bg-warning');
+        $bgColor = 'bg-' . ($child->element()?->bootstrapColor() ?? 'secondary');
     @endphp
     {{-- <div class=""> --}}
         <div class=" p-2 bg-light">
@@ -25,14 +25,9 @@
                 <div class="" style="display: inline">
                     @if ($child->next_element_id)
                         @php
-                            $bgColor =
-                                $child->nextTask()->type == 'form'
-                                    ? 'bg-primary'
-                                    : ($child->nextTask()->type == 'script'
-                                        ? 'bg-success'
-                                        : 'bg-warning');
+                            $nextBgColor = 'bg-' . ($child->nextTask()?->element()?->bootstrapColor() ?? 'secondary');
                         @endphp
-                        <span class="badge {{ $bgColor }}">{{ trans('Next Task') }} :
+                        <span class="badge {{ $nextBgColor }}">{{ trans('Next Task') }} :
                             {{ $child->nextTask()->name }}
                         </span>
                     @endif
