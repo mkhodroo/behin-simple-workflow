@@ -48,7 +48,7 @@ src/config/elements.php          ← فهرست المان‌های پیش‌ف�
 | `label()` | `string` | کلید ترجمهٔ نمایشی | نام انسانی از روی کلید |
 | `bootstrapColor()` | `string` | رنگ Badge در صفحهٔ ویرایش تسک | `secondary` |
 | `diagramColors()` | `array` | `fill` و `stroke` دیاگرام Mermaid | خاکستری |
-| `diagramClass()` | `string` | کلاس CSS نود در دیاگرام | `task-{key}` |
+| `diagramClass()` | `string` | کلاس CSS نود در دیاگرام | `wf{PascalKey}` |
 | `diagramShape()` | `array` | جفت کاراکتر ابتدا/انتها | `['[', ']']` |
 | `executiveModelClass()` | `?string` | کلاس مدل «المان اجرایی» | `null` |
 | `hasExecutiveElement()` | `bool` | آیا المان اجرایی دارد | خودکار از مدل |
@@ -59,6 +59,14 @@ src/config/elements.php          ← فهرست المان‌های پیش‌ف�
 | `afterImport(...)` | `void` | قلاب نگاشت ارجاع‌ها پس از ایمپورت | خالی |
 | `validateDefinition(Task $task)` | `array` | پیام‌های خطای تعریف تسک | خالی (بدون خطا) |
 | `taskSettingFields()` | `array` | ستون‌های `wf_task` که این المان در فرم ویرایش به آن‌ها نیاز دارد | خالی |
+
+> **نکتهٔ مهم دربارهٔ `diagramClass()`:** نام کلاس نود مستقیماً داخل گرامر Mermaid
+> با `:::` قرار می‌گیرد. کلمات کلیدی گرامر (`end`، `class`، `style`، `click`،
+> `subgraph`، `default`، `graph`، `direction`) در نام کلاس باعث خطای
+> «Syntax error in graph» می‌شوند و کل نمودار رندر نمی‌شود.
+> به همین دلیل پیش‌فرض از `DiagramClass::make()` استفاده می‌کند که نام را به
+> یک شناسهٔ camelCase با پیشوند `wf` تبدیل می‌کند (`end` → `wfEnd`).
+> اگر المانی `diagramClass()` را override می‌کند، **نباید** کلمهٔ کلیدی برگرداند.
 
 ## افزودن یک المان جدید (گام‌به‌گام)
 

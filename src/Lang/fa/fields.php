@@ -5,6 +5,8 @@ return [
     'description' => 'توضیحات',
     'status' => 'وضعیت',
     'created_at' => 'تاریخ ایجاد',
+    'Script Before Start' => 'اسکریپت شروع فرایند',
+    'Script Before Start Hint' => 'این اسکریپت بلافاصله پس از استارت شدن فرایند و پیش از ورود به اولین مرحله اجرا می‌شود.',
     'updated_at' => 'تاریخ ویرایش',
     'created_by' => 'ایجاد کننده',
     'updated_by' => 'ویرایش کننده',

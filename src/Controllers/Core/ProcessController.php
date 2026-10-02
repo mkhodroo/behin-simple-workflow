@@ -15,6 +15,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ProcessController extends Controller
@@ -38,14 +39,32 @@ class ProcessController extends Controller
     public function edit($processId): View
     {
         $process = Process::findOrFail($processId);
-        return view('SimpleWorkflowView::Core.Process.edit', compact('process'));
+        $scripts = ScriptController::getAll();
+        return view('SimpleWorkflowView::Core.Process.edit', compact('process', 'scripts'));
     }
 
     public function update(Request $request, $processId)
     {
         $process = Process::findOrFail($processId);
-        $process->update($request->only(['name', 'category', 'case_prefix']));
+        $process->update($request->only(['name', 'category', 'case_prefix', 'script_before_start']));
         return redirect()->route('simpleWorkflow.process.index');
+    }
+
+    /**
+     * اجرای اسکریپت ابتدای فرایند؛ بلافاصله بعد از ساخت پرونده و قبل از ساخت اینبوکس.
+     * در صورت خطا، خطا لاگ می‌شود و فرایند مثل قبل ادامه پیدا می‌کند.
+     */
+    protected static function runScriptBeforeStart($processId, $caseId)
+    {
+        $process = Process::find($processId);
+        if (!$process || !$process->script_before_start) {
+            return;
+        }
+        try {
+            ScriptController::runScript($process->script_before_start, $caseId);
+        } catch (\Throwable $e) {
+            Log::error('script_before_start failed for process ' . $processId . ': ' . $e->getMessage());
+        }
     }
 
     public static function getById($id): Process
@@ -126,6 +145,10 @@ class ProcessController extends Controller
         }
 
         $case = CaseController::create($task->process_id, $creator, null, $inDraft, $caseNumber, $parentId);
+
+        // اسکریپت ابتدای فرایند: قبل از ورود به مراحل بعدی اجرا می‌شود
+        self::runScriptBeforeStart($task->process_id, $case->id);
+
         $status = $inDraft ? 'draft' : 'new';
         $inbox = InboxController::create($taskId, $case->id, $creator, $status);
         if($redirect)

@@ -30,6 +30,7 @@ $root = dirname(__DIR__) . '/src';
 
 require $root . '/Elements/ElementContract.php';
 require $root . '/Elements/AbstractElement.php';
+require $root . '/Elements/DiagramClass.php';
 require $root . '/Elements/ElementRegistry.php';
 require $root . '/Elements/Builtin/FormElement.php';
 require $root . '/Elements/Builtin/ScriptElement.php';
@@ -39,6 +40,7 @@ require $root . '/Elements/Builtin/TimedConditionElement.php';
 
 use Behin\SimpleWorkflow\Elements\Builtin\EndElement;
 use Behin\SimpleWorkflow\Elements\Builtin\FormElement;
+use Behin\SimpleWorkflow\Elements\DiagramClass;
 use Behin\SimpleWorkflow\Elements\ElementRegistry;
 use Behin\SimpleWorkflow\Models\Core\Form;
 use Behin\SimpleWorkflow\Models\Core\Task;
@@ -65,12 +67,47 @@ check('گزینه‌های dropdown با ترجمه ساخته می‌شوند',
 check('رنگ bootstrap المان فرم', $registry->get('form')->bootstrapColor(), 'primary');
 check('رنگ bootstrap المان پایان', $registry->get('end')->bootstrapColor(), 'danger');
 check('رنگ bootstrap المان شرط زمان‌دار', $registry->get('timed_condition')->bootstrapColor(), 'info');
-check('کلاس CSS دیاگرام فرم', $registry->get('form')->diagramClass(), 'task-form');
-check('کلاس CSS دیاگرام شرط زمان‌دار', $registry->get('timed_condition')->diagramClass(), 'task-timed_condition');
+check('کلاس CSS دیاگرام فرم', $registry->get('form')->diagramClass(), 'wfForm');
+check('کلاس CSS دیاگرام شرط زمان‌دار', $registry->get('timed_condition')->diagramClass(), 'wfTimedCondition');
 check('شکل نود فرم در دیاگرام', $registry->get('form')->diagramShape(), ['(', ')']);
 check('شکل نود شرط در دیاگرام', $registry->get('condition')->diagramShape(), ['{', '}']);
 check('شکل نود پایان در دیاگرام', $registry->get('end')->diagramShape(), ['((', '))']);
 check('رنگ‌های دیاگرام اسکریپت', $registry->get('script')->diagramColors(), ['fill' => '#28a745', 'stroke' => '#1e7e34']);
+
+// --- کلاس دیاگرام: نباید به کلمهٔ کلیدی Mermaid برخورد کند ---
+// رگرسیون: کلاس `task-end` باعث «Syntax error in graph» می‌شد چون `end`
+// کلمهٔ کلیدی گرامر است و کل نمودار از کار می‌افتاد.
+check('کلاس المان end امن است', DiagramClass::make('end'), 'wfEnd');
+check('کلاس المان default امن است', DiagramClass::make('default'), 'wfDefault');
+check('کلاس المان subgraph امن است', DiagramClass::make('subgraph'), 'wfSubgraph');
+check('کلاس المان click امن است', DiagramClass::make('click'), 'wfClick');
+check('کلاس المان style امن است', DiagramClass::make('style'), 'wfStyle');
+check('کلاس المان graph امن است', DiagramClass::make('graph'), 'wfGraph');
+check('کلاس با خط تیره camelCase می‌شود', DiagramClass::make('my-end-form'), 'wfMyEndForm');
+check('کلاس با زیرخط camelCase می‌شود', DiagramClass::make('leg_end'), 'wfLegEnd');
+check('کلاس خالی جایگزین می‌شود', DiagramClass::make(''), 'wfUnknown');
+check('کلاس null جایگزین می‌شود', DiagramClass::make(null), 'wfUnknown');
+check('کلاس عددی با X شروع می‌شود', DiagramClass::make('123abc'), 'wfX123abc');
+
+// هیچ کلاس تولیدشده‌ای نباید به کلمهٔ کلیدی ختم شود یا کلمهٔ کلیدی باشد.
+$dangerous = [];
+foreach (array_merge(array_keys($definitions), DiagramClass::RESERVED_KEYWORDS, ['unknown', 'my-end', 'a_end', 'x_end']) as $key) {
+    $class = DiagramClass::make($key);
+    foreach (preg_split('/[^a-zA-Z0-9]+/', $class, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $part) {
+        if (in_array(strtolower($part), DiagramClass::RESERVED_KEYWORDS, true)) {
+            $dangerous[$key] = $class;
+        }
+    }
+    if (!preg_match('/^[A-Za-z][A-Za-z0-9]*$/', $class)) {
+        $dangerous[$key] = $class;
+    }
+}
+check('هیچ کلاس تولیدشده‌ای کلمهٔ کلیدی ندارد', $dangerous, []);
+
+// همهٔ المان‌های واقعی باید کلاس امن بسازند.
+foreach ($registry->all() as $key => $element) {
+    check("کلاس المان «{$key}» شناسهٔ معتبر است", (bool) preg_match('/^[A-Za-z][A-Za-z0-9]*$/', $element->diagramClass()), true);
+}
 
 // --- المان اجرایی ---
 check('المان فرم المان اجرایی دارد', $registry->get('form')->hasExecutiveElement(), true);

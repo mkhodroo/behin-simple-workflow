@@ -30,9 +30,16 @@ abstract class AbstractElement implements ElementContract
         return ['fill' => '#6c757d', 'stroke' => '#4d5459'];
     }
 
+    /**
+     * کلاس CSS نود در دیاگرام.
+     *
+     * نام باید «امن» باشد؛ چون در Mermaid با `:::` اعمال می‌شود و نام‌هایی مثل
+     * `task-end` یا `task-default` کل گراف را با خطای Syntax می‌شکنند.
+     * برای همین از DiagramClass استفاده می‌کنیم.
+     */
     public function diagramClass(): string
     {
-        return 'task-' . str_replace('-', '_', $this->key());
+        return DiagramClass::make($this->key());
     }
 
     public function diagramShape(): array

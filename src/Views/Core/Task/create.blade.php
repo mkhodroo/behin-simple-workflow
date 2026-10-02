@@ -35,7 +35,7 @@
                     @php
                         // کلاس و شکل نود از المان ثبت‌شده در رجیستری گرفته می‌شود
                         $taskElement = $task->element();
-                        $taskClass = $taskElement?->diagramClass() ?? 'task-default';
+                        $taskClass = $taskElement?->diagramClass() ?? \Behin\SimpleWorkflow\Elements\DiagramClass::make(null);
                         [$shapeStart, $shapeEnd] = $taskElement?->diagramShape() ?? ['[', ']'];
                     @endphp
                     {{ $task->id }}{{ $shapeStart }}"{{ $task->name }}"{{ $shapeEnd }}:::{{ $taskClass }}
@@ -71,6 +71,33 @@
             </div>
         </div>
 
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">{{ trans('fields.Script Before Start') }}</div>
+        <div class="card-body">
+            <form action="{{ route('simpleWorkflow.process.update', $process->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="row">
+                    <div class="col-sm-10">
+                        <select name="script_before_start" id="script_before_start" class="form-select select2">
+                            <option value="">{{ trans('None') }}</option>
+                            @foreach ($scripts as $script)
+                                <option value="{{ $script->id }}" {{ $process->script_before_start == $script->id ? 'selected' : '' }}>
+                                    {{ $script->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <button type="submit" class="btn btn-primary w-100">{{ trans('Save') }}</button>
+                    </div>
+                </div>
+                <small class="form-text text-muted">
+                    {{ trans('fields.Script Before Start Hint') }}
+                </small>
+            </form>
+        </div>
     </div>
     <div class="card">
         <form action="{{ route('simpleWorkflow.task.create') }}" method="POST" class="">

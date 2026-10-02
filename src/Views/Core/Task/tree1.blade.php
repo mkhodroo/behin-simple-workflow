@@ -2,7 +2,7 @@
     @php
         // کلاس، شکل و رنگ نود از المان ثبت‌شده در رجیستری المان‌ها گرفته می‌شود
         $childElement = $child->element();
-        $taskClass = $childElement?->diagramClass() ?? 'task-default';
+        $taskClass = $childElement?->diagramClass() ?? \Behin\SimpleWorkflow\Elements\DiagramClass::make($child->type);
         [$shapeStart, $shapeEnd] = $childElement?->diagramShape() ?? ['[', ']'];
         $taskName = $child->name . ($child->is_preview ? ' (' . trans('fields.Preview') . ')' : '');
     @endphp

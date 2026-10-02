@@ -31,11 +31,18 @@ class Process extends Model
         'number_of_error',
         'report_form_id',
         'category',
-        'case_prefix'
+        'case_prefix',
+        'script_before_start',
     ];
 
     function cases(){
         return $this->hasMany(Cases::class);
+    }
+
+    /** اسکریپتی که در لحظه استارت شدن فرایند اجرا می‌شود */
+    function scriptBeforeStart()
+    {
+        return $this->belongsTo(Script::class, 'script_before_start');
     }
 
     function tasks($includePreview = true){
