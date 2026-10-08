@@ -127,13 +127,19 @@ class IssueInvoice extends Controller
             $phpword->setValue('sign', '');
         }
         
+        $directory = public_path('simpleWorkflow');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+        
         $preInvociceFileName = "simpleWorkflow/فاکتور رسمی پرونده" . "-$case->number" . ".docx";
         $phpword->saveAs(public_path($preInvociceFileName));
         
         $preInvoice->invoice_file = $preInvociceFileName;
         $preInvoice->pre_invoice_type = $request->type;
         $preInvoice->save();
-        return url('public/'. $preInvoice->invoice_file);
+        return url($preInvoice->invoice_file);
         
     }
 }

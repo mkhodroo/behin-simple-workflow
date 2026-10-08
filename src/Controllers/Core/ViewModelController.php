@@ -12,6 +12,7 @@ use BehinUserRoles\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Contracts\Support\Htmlable;
 
 class ViewModelController extends Controller
 {
@@ -405,6 +406,7 @@ class ViewModelController extends Controller
                         $s .= "<tr>";
                         foreach ($columns as $column) {
                             try {
+                                $isMethodOutput = false;
                                 if (str_contains($column, '()->')) {
                                     $value = self::resolveColumnPath($row, $column);
                                 } elseif (Str::endsWith($column, '()')) {
@@ -412,6 +414,8 @@ class ViewModelController extends Controller
 
                                     if ($method && method_exists($row, $method)) {
                                         $value = $row->$method();
+                                        // خروجی متد موجودیت کد توسعه‌دهنده است و ممکن است HTML باشد
+                                        $isMethodOutput = true;
                                     } else {
                                         $value = 'تابع تعریف نشده است';
                                     }
@@ -419,8 +423,21 @@ class ViewModelController extends Controller
                                     $value = $row->$column ?? null;
                                 }
 
+                                if ($value instanceof Htmlable) {
+                                    $cell = $value->toHtml();
+                                } elseif ($isMethodOutput && ($value === null || is_scalar($value) || $value instanceof \Stringable)) {
+                                    // خروجی متد موجودیت کد توسعه‌دهنده است؛ HTML باید رندر شود نه escape
+                                    $cell = $value === null ? '' : (string) $value;
+                                } else {
+                                    $cell = e(
+                                        is_array($value)
+                                            ? json_encode($value, JSON_UNESCAPED_UNICODE)
+                                            : (is_scalar($value) || $value === null ? (string) $value : (string) json_encode($value))
+                                    );
+                                }
+
                                 $s .= "<td style='border-top: 0px;border-left: solid gray 1px;'>" .
-                                    (is_scalar($value) || $value === null ? e((string) $value) : (string) $value) .
+                                    $cell .
                                     "</td>";
                             } catch (\Throwable $e) {
                                 $s .= "<td>" . e($e->getMessage()) . "</td>";
