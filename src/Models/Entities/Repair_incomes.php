@@ -1,6 +1,6 @@
 <?php 
 namespace Behin\SimpleWorkflow\Models\Entities; 
-use Behin\SimpleWorkflow\Controllers\Core\VariableController; use Illuminate\Database\Eloquent\Factories\HasFactory; use Illuminate\Database\Eloquent\Model; use Illuminate\Support\Str; use Illuminate\Database\Eloquent\SoftDeletes;use Behin\SimpleWorkflow\Models\Core\Cases;
+use Behin\SimpleWorkflow\Controllers\Core\VariableController; use Illuminate\Database\Eloquent\Factories\HasFactory; use Illuminate\Database\Eloquent\Model; use Illuminate\Support\Str; use Illuminate\Support\HtmlString;use Illuminate\Database\Eloquent\SoftDeletes;use Behin\SimpleWorkflow\Models\Core\Cases;
  class Repair_incomes extends Model 
 { 
     use SoftDeletes; 
@@ -35,12 +35,20 @@ public function amount(){
 }
 
 public function receiptLink(){
+    // ✅ HtmlString => ViewModelController خروجی را بدون escape رندر می‌کند
     if (str_contains($this->payment_receipt, 'http')){
-        return "<a href=$this->payment_receipt download=''>دانلود</a>";
+        $href = e($this->payment_receipt);
     }
     else{
-        return "<a href=url('public/' . $this->payment_receipt) download=''>دانلود</a>";
+        $href = e(url('public/' . $this->payment_receipt));
     }
+
+    return new HtmlString("<a href=\"{$href}\" download>" . trans('SimpleWorkflowLang::fields.Download') . "</a>");
+}
+
+public function receipt_link(){
+    // ✅ نام قرینه بدون فاصله — سازگار با منطق resolveColumnPath در ViewModelController
+    return $this->receiptLink();
 }
 
 public function payment_receipt(){
