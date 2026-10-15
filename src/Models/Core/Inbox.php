@@ -32,6 +32,7 @@ class Inbox extends Model
         'task_id',
         'case_id',
         'actor',
+        'done_by',
         'status',
         'case_name',
         'done_at',
@@ -94,5 +95,10 @@ class Inbox extends Model
     public function actor()
     {
         return $this->belongsTo(User::class, 'actor');
+    }
+
+    public function doneBy()
+    {
+        return $this->belongsTo(User::class, 'done_by');
     }
 }

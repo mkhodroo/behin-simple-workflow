@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
 use Behin\SimpleWorkflow\Jobs\SendTaskReminderNotification;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Schema;
 
 class InboxController extends Controller
 {
@@ -118,16 +119,60 @@ class InboxController extends Controller
         return Inbox::where('task_id', $taskId)->where('case_id', $caseId)->get();
     }
 
-    public static function changeStatusByInboxId($inboxId, $status)
+    public static function changeStatusByInboxId($inboxId, $status, $doneBy = null)
     {
         $inboxRow = self::getById($inboxId);
-        if ($inboxRow->status == 'done' and $inboxRow->actor != Auth::id()) {
-            $inboxRow->status = 'doneByOther';
-        } else {
-            $inboxRow->status = $status;
+        if (!$inboxRow) {
+            return;
         }
-        $inboxRow->done_at = now();
+        $performerId = $doneBy ?? (Auth::check() ? Auth::id() : null);
+        if (in_array($status, ['done', 'doneByOther'])) {
+            $inboxRow->done_at = $inboxRow->done_at ?? now();
+            if (Schema::hasColumn($inboxRow->getTable(), 'done_by')) {
+                $inboxRow->done_by = $performerId ?? $inboxRow->actor;
+            }
+            // اگر این ردیف متعلق به انجام‌دهنده نیست ولی خواسته شده done شود،
+            // یعنی شخص دیگری تسک مشترک را انجام داده است
+            if (
+                $status === 'done' && $performerId &&
+                $inboxRow->actor && (string) $inboxRow->actor !== (string) $performerId
+            ) {
+                $status = 'doneByOther';
+            }
+        }
+        $inboxRow->status = $status;
         $inboxRow->save();
+    }
+
+    /**
+     * یک تسک مشترک را برای انجام‌دهنده done و برای بقیه doneByOther می‌کند
+     * و انجام‌دهنده را در ستون done_by ثبت می‌کند
+     */
+    public static function markTaskAsDone($taskId, $caseId, $performerInboxId = null, $performerId = null)
+    {
+        $performerId = $performerId ?? (Auth::check() ? Auth::id() : null);
+        $inboxes = self::getAllByTaskIdAndCaseId($taskId, $caseId);
+        foreach ($inboxes as $row) {
+            $isPerformerRow = $performerInboxId
+                ? (string) $row->id === (string) $performerInboxId
+                : ($performerId && (string) $row->actor === (string) $performerId);
+            if ($isPerformerRow) {
+                $fresh = self::getById($row->id);
+                $fresh->status = 'done';
+                $fresh->done_at = $fresh->done_at ?? now();
+                if (Schema::hasColumn($fresh->getTable(), 'done_by')) {
+                    $fresh->done_by = $performerId ?? $fresh->actor;
+                }
+                $fresh->save();
+            } else {
+                if (!in_array($row->status, ['done', 'doneByOther', 'canceled'])) {
+                    self::changeStatusByInboxId($row->id, 'doneByOther', $performerId);
+                } elseif (Schema::hasColumn($row->getTable(), 'done_by') && !$row->done_by) {
+                    $row->done_by = $performerId;
+                    $row->save();
+                }
+            }
+        }
     }
 
 

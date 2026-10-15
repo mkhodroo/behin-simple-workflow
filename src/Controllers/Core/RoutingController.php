@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RoutingController extends Controller
 {
@@ -142,29 +143,31 @@ class RoutingController extends Controller
                     }
                 }
             }
+            $performerId = Auth::check() ? Auth::id() : null;
             if ($task->type == 'form') {
                 if ($task->assignment_type == 'normal') {
-                    $inboxes = InboxController::getAllByTaskIdAndCaseId($task->id, $caseId);
-                    foreach ($inboxes as $inbox) {
-                        InboxController::changeStatusByInboxId($inbox->id, 'done');
-                    }
-                    // InboxController::changeStatusByInboxId($request->inboxId, 'done');
-                    //از این رکورد در اینباکس یک یا چمد ردیف وجود دارد
-                    // وضعیت همه رکوردها باید در اینباکس به انجام شده تغییر کند
+                    InboxController::markTaskAsDone($task->id, $caseId, $request->inboxId, $performerId);
+                    //انجام‌دهنده done می‌شود و بقیه ردیف‌های همین تسک doneByOther
+                    //انجام‌دهنده در ستون done_by هم ثبت می‌شود
                 }
                 if ($task->assignment_type == 'dynamic') {
-                    InboxController::changeStatusByInboxId($request->inboxId, 'done');
+                    InboxController::changeStatusByInboxId($request->inboxId, 'done', $performerId);
                     //از این رکورد در اینباکس یک ردیف وجود دارد
                     // وضعیت همین رکورد باید در اینباکس به انجام شده تغییر کند
                 }
                 if ($task->assignment_type == 'parallel') {
-                    InboxController::changeStatusByInboxId($inbox->id, 'done');
-                    // از این رکورد چند ردیف در اینباکس وجود دارد
-                    // همه باید وضعیت انجام شده تغییر کنند
+                    InboxController::changeStatusByInboxId($inbox->id, 'done', $performerId);
+                    // در حالت موازی هر نفر فقط ردیف خودش را انجام می‌دهد
                 }
                 if ($task->assignment_type == 'public') {
                     $inbox->status = 'done';
-                    $inbox->actor = Auth::check() ? Auth::id() : $request->ip();
+                    if (Schema::hasColumn($inbox->getTable(), 'done_by')) {
+                        $inbox->done_by = $performerId ?? $inbox->actor;
+                    }
+                    if (!$inbox->actor && $performerId) {
+                        $inbox->actor = $performerId;
+                    }
+                    $inbox->done_at = $inbox->done_at ?? now();
                     $inbox->save();
                 }
             }
@@ -227,20 +230,21 @@ class RoutingController extends Controller
         }
 
         if ($task->type == 'form') {
+            $performerId = Auth::check() ? Auth::id() : null;
             if ($task->assignment_type == 'normal') {
-                $inboxes = InboxController::getAllByTaskIdAndCaseId($task->id, $caseId);
-                foreach ($inboxes as $row) {
-                    InboxController::changeStatusByInboxId($row->id, 'done');
-                }
+                InboxController::markTaskAsDone($task->id, $caseId, $request->inboxId, $performerId);
             }
             if ($task->assignment_type == 'dynamic') {
-                InboxController::changeStatusByInboxId($request->inboxId, 'done');
+                InboxController::changeStatusByInboxId($request->inboxId, 'done', $performerId);
             }
             if ($task->assignment_type == 'parallel') {
-                InboxController::changeStatusByInboxId($inbox->id, 'done');
+                InboxController::changeStatusByInboxId($inbox->id, 'done', $performerId);
             }
         }
         $previousInbox->status = 'new';
+        if (Schema::hasColumn($previousInbox->getTable(), 'done_by')) {
+            $previousInbox->done_by = null;
+        }
         $previousInbox->save();
 
         if($previousInbox->actor == Auth::id()){
@@ -284,24 +288,19 @@ class RoutingController extends Controller
             return $result;
         }
         if ($task->type == 'form') {
+            $performerId = Auth::check() ? Auth::id() : null;
             if ($task->assignment_type == 'normal') {
-                $inboxes = InboxController::getAllByTaskIdAndCaseId($task->id, $caseId);
-                foreach ($inboxes as $inbox) {
-                    InboxController::changeStatusByInboxId($inbox->id, 'done');
-                }
-                // InboxController::changeStatusByInboxId($request->inboxId, 'done');
-                //از این رکورد در اینباکس یک یا چمد ردیف وجود دارد
-                // وضعیت همه رکوردها باید در اینباکس به انجام شده تغییر کند
+                InboxController::markTaskAsDone($task->id, $caseId, $request->inboxId, $performerId);
+                //انجام‌دهنده done و بقیه doneByOther
             }
             if ($task->assignment_type == 'dynamic') {
-                InboxController::changeStatusByInboxId($request->inboxId, 'done');
+                InboxController::changeStatusByInboxId($request->inboxId, 'done', $performerId);
                 //از این رکورد در اینباکس یک ردیف وجود دارد
                 // وضعیت همین رکورد باید در اینباکس به انجام شده تغییر کند
             }
             if ($task->assignment_type == 'parallel') {
-                InboxController::changeStatusByInboxId($inbox->id, 'done');
-                // از این رکورد چند ردیف در اینباکس وجود دارد
-                // همه باید وضعیت انجام شده تغییر کنند
+                InboxController::changeStatusByInboxId($inbox->id, 'done', $performerId);
+                // در حالت موازی هر نفر فقط ردیف خودش را انجام می‌دهد
             }
         }
         if($newInbox = InboxController::caseIsInUserInbox($caseId)){

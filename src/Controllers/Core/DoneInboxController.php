@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class DoneInboxController extends Controller
 {
@@ -27,7 +28,12 @@ class DoneInboxController extends Controller
 
     public static function getUserInbox($userId): Collection
     {
-        $rows = Inbox::where('actor', $userId)->whereIn('status', ['done', 'doneByOther'])->with('task')->orderBy('created_at', 'desc')->get();
+        $rows = Inbox::where(function ($query) use ($userId) {
+            $query->where('actor', $userId);
+            if (Schema::hasColumn((new Inbox)->getTable(), 'done_by')) {
+                $query->orWhere('done_by', $userId);
+            }
+        })->whereIn('status', ['done', 'doneByOther'])->with(['task', 'doneBy'])->orderBy('created_at', 'desc')->get();
         return $rows;
     }
 }

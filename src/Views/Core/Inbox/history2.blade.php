@@ -691,8 +691,14 @@
 
                                             <div class="history2-meta-item">
                                                 <i class="fa fa-user"></i>
-                                                <span>{{ getUserInfo($row->actor)?->name ?? '-' }}</span>
+                                                <span>مامور انجام: {{ getUserInfo($row->actor)?->name ?? '—' }}</span>
                                             </div>
+                                            @if ($hasDone)
+                                                <div class="history2-meta-item">
+                                                    <i class="fa fa-check-circle"></i>
+                                                    <span>انجام‌دهنده: {{ getUserInfo($row->done_by ?? $row->actor)?->name ?? '—' }}</span>
+                                                </div>
+                                            @endif
 
                                             <div class="history2-meta-item" dir="ltr">
                                                 <i class="fa fa-play-circle"></i>

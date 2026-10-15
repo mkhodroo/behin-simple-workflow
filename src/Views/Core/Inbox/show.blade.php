@@ -59,20 +59,26 @@
         </div>
     </div>
 
-    @if (in_array($inbox->status, ['done', 'doneByOther']))
+    @if (in_array($inbox->status, ['done', 'doneByOther', 'doneBySystem']))
+        @php $performerId = $inbox->done_by ?? $inbox->actor; @endphp
         <div class="card shadow-sm mb-2">
             <div class="card-body">
                 <p class="m-0">
                     <i class="material-icons text-success mr-2">check_circle</i>
                     {{ trans('fields.Done At') }}:
                     <span class="badge badge-light" dir="ltr">
-                        {{ toJalali($inbox->updated_at)->format('Y-m-d H:i') }}
+                        {{ toJalali($inbox->done_at ?? $inbox->updated_at)->format('Y-m-d H:i') }}
                     </span>
                     <br>
                     {{ trans('fields.Done By') }}:
                     <span class="badge badge-light">
-                        {{ getUserInfo($inbox->actor)->name }}
+                        {{ getUserInfo($performerId)?->name ?? '-' }}
                     </span>
+                    @if ($inbox->status === 'doneByOther')
+                        <br>
+                        {{ trans('fields.Status') }}:
+                        <span class="badge badge-warning">{{ trans('fields.doneByOther') }}</span>
+                    @endif
                 </p>
             </div>
         </div>

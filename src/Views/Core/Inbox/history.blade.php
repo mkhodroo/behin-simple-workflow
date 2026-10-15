@@ -51,7 +51,7 @@
                                     <td>{{ $row->task->process->name }}</td>
                                     <td>{{ $row->task->name }}</td>
                                     <td>{{ $row->case_name }}</td>
-                                    <td>{{ getUserInfo($row->actor)?->name }}</td>
+                                    <td>{{ getUserInfo($row->done_by ?? $row->actor)?->name }}</td>
                                     <td>{{ trans('fields.' . $row->status) }}</td>
                                     <td dir="ltr">{{ toJalali($row->created_at)->format('Y-m-d H:i') }}</td>
                                     <td dir="ltr">
