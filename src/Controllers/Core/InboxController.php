@@ -303,8 +303,9 @@ class InboxController extends Controller
             $inbox->save();
         }
         $case = Cases::where('id', $inbox->case_id)->update(['status' => 'canceled']);
+        $caseNumber = $inbox->case->number;
         BotController::send(
-            "پرونده $inbox->case->number توسط: " . Auth::user()->name . "کنسل"
+            "پرونده $caseNumber توسط: " . Auth::user()->name . "کنسل"
         );
         return redirect()->route('simpleWorkflow.inbox.index')->with([
             'success' => trans('fields.Case canceled successfully')

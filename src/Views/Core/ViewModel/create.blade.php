@@ -113,7 +113,7 @@
             <tr>
                 <td>{{ trans('fields.which_rows_user_can_update') }}</td>
                 <td>
-                    <select name="which_rows_user_can_update" id="" multiple>
+                    <select name="which_rows_user_can_update[]" id="" multiple>
                         <option value="all">{{ trans('fields.All') }}</option>
                         <option value="user-created-it">{{ trans('fields.user created it') }}</option>
                         <option value="user-contributed-it">{{ trans('fields.user contributed it') }}</option>
@@ -135,7 +135,7 @@
             <tr>
                 <td>{{ trans('fields.which_rows_user_can_delete') }}</td>
                 <td>
-                    <select name="which_rows_user_can_delete" id="" multiple>
+                    <select name="which_rows_user_can_delete[]" id="" multiple>
                         <option value="all">{{ trans('fields.All') }}</option>
                         <option value="user-created-it">{{ trans('fields.user created it') }}</option>
                         <option value="user-contributed-it">{{ trans('fields.user contributed it') }}</option>
@@ -167,7 +167,7 @@
             <tr>
                 <td>{{ trans('fields.which_rows_user_can_read') }}</td>
                 <td>
-                    <select name="which_rows_user_can_read" id="" multiple>
+                    <select name="which_rows_user_can_read[]" id="" multiple>
                         <option value="all">{{ trans('fields.All') }}</option>
                         <option value="user-created-it">{{ trans('fields.user created it') }}</option>
                         <option value="user-contributed-it">{{ trans('fields.user contributed it') }}</option>

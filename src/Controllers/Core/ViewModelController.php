@@ -33,6 +33,20 @@ class ViewModelController extends Controller
     {
         $data = $request->except('_token');
         $data['api_key'] = $request->api_key ? $request->api_key : Str::random(16);
+        $nullableArrayFields = [
+            'which_rows_user_can_delete',
+            'which_rows_user_can_update',
+            'which_rows_user_can_read'
+        ];
+
+        // نرمال‌سازی فیلدهای شرط دسترسی (مثل متد update) تا رشته تکی هم به آرایه تبدیل شود
+        foreach ($nullableArrayFields as $field) {
+            $value = $request->input($field, []);
+            $data[$field] = is_array($value)
+                ? array_values($value)
+                : ($value === null || $value === '' ? [] : [$value]);
+        }
+
         $viewModel = ViewModel::create($data);
         return redirect()->back()->with(['success' => trans('Created Successfully')]);
     }
@@ -185,8 +199,11 @@ class ViewModelController extends Controller
     /**
      * ارزیابی شرط دسترسی روی یک رکورد.
      * ورودی userId جدا شده تا این منطق مستقل از Laravel قابل تست باشد.
+     * مقایسه به‌صورت رشته‌ای انجام می‌شود تا هم برای شناسه عددی و هم رشته‌ای (uuid) درست کار کند.
+     *
+     * @param int|string|null $userId
      */
-    public static function evaluateRowConditionForUser(?int $userId, $condition, $row): bool
+    public static function evaluateRowConditionForUser($userId, $condition, $row): bool
     {
         $condition = self::normalizeRowCondition($condition);
 
@@ -194,31 +211,49 @@ class ViewModelController extends Controller
             return true;
         }
 
-        if (empty($condition) || $userId === null) {
+        if ($userId === null) {
             return false;
         }
 
-        $userId = (int) $userId;
+        $userId = trim((string) $userId);
+
+        if ($userId === '' || empty($condition)) {
+            return false;
+        }
+
+        // خواندن امن فیلدها از آرایه، مدل Eloquent یا آبجکت ساده
+        $valueOf = function ($key) use ($row) {
+            if (is_array($row)) {
+                return $row[$key] ?? null;
+            }
+            if ($row instanceof \ArrayAccess) {
+                return $row->offsetExists($key) ? $row->offsetGet($key) : null;
+            }
+            if (is_object($row)) {
+                return $row->$key ?? null;
+            }
+            return null;
+        };
 
         if (
             in_array('user-created-it', $condition, true) &&
-            (int) ($row['created_by'] ?? 0) === $userId
+            trim((string) ($valueOf('created_by') ?? '')) === $userId
         ) {
             return true;
         }
 
         if (
             in_array('user-updated-it', $condition, true) &&
-            (int) ($row['updated_by'] ?? 0) === $userId
+            trim((string) ($valueOf('updated_by') ?? '')) === $userId
         ) {
             return true;
         }
 
         if (in_array('user-contributed-it', $condition, true)) {
-            foreach (explode(',', (string) ($row['contributers'] ?? '')) as $contributor) {
+            foreach (explode(',', (string) ($valueOf('contributers') ?? '')) as $contributor) {
                 $contributor = trim($contributor);
 
-                if ($contributor !== '' && (int) $contributor === $userId) {
+                if ($contributor !== '' && $contributor === $userId) {
                     return true;
                 }
             }
@@ -229,8 +264,10 @@ class ViewModelController extends Controller
 
     private static function userCanRow($row, $condition): bool
     {
+        // Auth::id() ممکن است عددی یا رشته‌ای (uuid) باشد؛ بدون cast عددی پاس می‌دهیم
+        // تا مقایسه رشته‌ای داخل evaluateRowConditionForUser درست انجام شود
         return self::evaluateRowConditionForUser(
-            Auth::id() === null ? null : (int) Auth::id(),
+            Auth::id(),
             $condition,
             [
                 'created_by' => $row->created_by ?? null,
@@ -463,6 +500,9 @@ class ViewModelController extends Controller
                             'viewModel_id' => $viewModel->id,
                         ]);
                         $s .= "<div class=''>";
+                        if ($row->allow_delete) {
+                            $s .= "<i class='fa fa-trash btn btn-sm btn-danger ml-1' onclick='delete_view_model_row(`$viewModel->id`,`$row->id`, `$viewModel->api_key`)'></i>";
+                        }
                         if ($row->allow_update) {
                             $s .= FormController::open($formRequest, $viewModel->update_form, false);
                         } else {
