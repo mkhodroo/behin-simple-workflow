@@ -5,8 +5,10 @@
 @endsection
 
 @php
+    // دیتابیس منبع اصلی است تا محتوای ذخیره‌شده قابل خواندن/ویرایش باشد؛
+    // فقط اگر دیتابیس خالی بود از فایل بخوان
     $executive_file_content = $script->content;
-    if ($script->executive_file) {
+    if (!$executive_file_content && $script->executive_file) {
         $filePath = base_path(
             '../packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php',
         );

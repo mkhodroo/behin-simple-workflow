@@ -59,20 +59,41 @@ class ScriptController extends Controller
 
     public function update(Request $request, Script $script)
     {
-        // $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'executive_file' => 'nullable|string',
-        //     'content' => 'nullable|json',
-        // ]);
+        // محتوای ارسالی از ادیتور (ace) با نام executive_file_content می‌آید،
+        // اما برای سازگاری، فیلد content را هم قبول می‌کنیم تا حتما در دیتابیس ذخیره شود.
+        $newContent = $request->input('executive_file_content');
+        if ($newContent === null) {
+            $newContent = $request->input('content');
+        }
 
-        if ($request->executive_file_content) {
-            $file = base_path('../packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
-            file_put_contents($file, $request->executive_file_content);
-            // $script->update(['content' => $request->executive_file_content]);
+        if ($newContent !== null) {
+            // ۱) همیشه در دیتابیس ذخیره کن تا بعدا از روی دیتابیس قابل خواندن باشد
+            $script->update(['content' => $newContent]);
+
+            // ۲) فایل فیزیکی را هم برای سازگاری/ویرایش دستی به‌روز نگه دار
+            if ($script->executive_file) {
+                $file = base_path('../packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
+                try {
+                    if (!File::exists(dirname($file))) {
+                        File::makeDirectory(dirname($file), 0755, true);
+                    }
+                    file_put_contents($file, $newContent);
+                } catch (Throwable $e) {
+                    // اگر نوشتن فایل به هر دلیلی شکست خورد، ذخیره دیتابیس قبلا انجام شده است
+                }
+            }
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => __('Script updated successfully.'), 'id' => $script->id]);
+            }
             return redirect()->route('simpleWorkflow.scripts.edit', $script->id)->with('success', 'Script updated successfully.');
         }
 
         $script->update($request->only('name', 'executive_file', 'content'));
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['message' => __('Script updated successfully.'), 'id' => $script->id]);
+        }
 
         return redirect()->route('simpleWorkflow.scripts.index')->with('success', 'Script updated successfully.');
     }
@@ -238,13 +259,14 @@ class ScriptController extends Controller
 
     private static function loadContent(Script $script)
     {
-        $executiveClass = "Behin\\SimpleWorkflow\\Controllers\\Scripts\\" . $script->executive_file . '.php';
+        $executiveClass = "Behin\\SimpleWorkflow\\Controllers\\Scripts\\" . $script->executive_file;
 
         if (!$script->content && $script->executive_file) {
             $filePath = base_path('../packages/behin-simple-workflow/src/Controllers/Scripts/' . $script->executive_file . '.php');
             if (file_exists($filePath)) {
                 $content = file_get_contents($filePath);
                 $script->update(['content' => $content]);
+                $script->refresh();
             }
         }
 
