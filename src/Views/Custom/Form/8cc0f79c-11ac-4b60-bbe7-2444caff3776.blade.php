@@ -54,7 +54,14 @@
             return null;
         }
 
-        return strpos($path, 'http') === 0 ? $path : url(ltrim($path, '/'));
+        if (preg_match('/^https?:\\/\\//i', $path)) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+        $path = preg_replace('#^public/#', '', $path);
+
+        return url('public/' . $path);
     };
 @endphp
 
@@ -523,6 +530,26 @@
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 16px;
+}
+
+.csr-device-image {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(100%, 280px);
+    padding: 10px;
+    border: 1px solid #dfe4e9;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.csr-device-image img {
+    display: block;
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #f4f6f8;
 }
 
 .csr-action {
@@ -1330,16 +1357,16 @@
                     @if ($device)
                         <div class="csr-device-files">
                             @if ($fileUrl($device->initial_pic))
-                                <a class="csr-action" href="{{ $fileUrl($device->initial_pic) }}" target="_blank" rel="noopener" download>
-                                    <i class="fa fa-picture-o"></i>
-                                    تصویر اولیه دستگاه
+                                <a class="csr-device-image" href="{{ $fileUrl($device->initial_pic) }}" target="_blank" rel="noopener">
+                                    <span class="csr-info-label"><i class="fa fa-picture-o"></i> تصویر اولیه دستگاه</span>
+                                    <img src="{{ $fileUrl($device->initial_pic) }}" alt="تصویر اولیه دستگاه" loading="lazy">
                                 </a>
                             @endif
 
                             @if ($fileUrl($device->plaque_pic))
-                                <a class="csr-action" href="{{ $fileUrl($device->plaque_pic) }}" target="_blank" rel="noopener" download>
-                                    <i class="fa fa-id-card-o"></i>
-                                    تصویر پلاک دستگاه
+                                <a class="csr-device-image" href="{{ $fileUrl($device->plaque_pic) }}" target="_blank" rel="noopener">
+                                    <span class="csr-info-label"><i class="fa fa-id-card-o"></i> تصویر پلاک دستگاه</span>
+                                    <img src="{{ $fileUrl($device->plaque_pic) }}" alt="تصویر پلاک دستگاه" loading="lazy">
                                 </a>
                             @endif
                         </div>
