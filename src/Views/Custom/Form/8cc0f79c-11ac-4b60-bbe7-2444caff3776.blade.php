@@ -1359,14 +1359,12 @@
                             @if ($fileUrl($device->initial_pic))
                                 <a class="csr-device-image" href="{{ $fileUrl($device->initial_pic) }}" target="_blank" rel="noopener">
                                     <span class="csr-info-label"><i class="fa fa-picture-o"></i> تصویر اولیه دستگاه</span>
-                                    <img src="{{ $fileUrl($device->initial_pic) }}" alt="تصویر اولیه دستگاه" loading="lazy">
                                 </a>
                             @endif
 
                             @if ($fileUrl($device->plaque_pic))
                                 <a class="csr-device-image" href="{{ $fileUrl($device->plaque_pic) }}" target="_blank" rel="noopener">
                                     <span class="csr-info-label"><i class="fa fa-id-card-o"></i> تصویر پلاک دستگاه</span>
-                                    <img src="{{ $fileUrl($device->plaque_pic) }}" alt="تصویر پلاک دستگاه" loading="lazy">
                                 </a>
                             @endif
                         </div>
