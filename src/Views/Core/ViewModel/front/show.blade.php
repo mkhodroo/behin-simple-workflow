@@ -53,12 +53,12 @@
                             $fieldLabel = trans('SimpleWorkflowLang::fields.' . $field->fieldName);
                             $fieldName = $field->fieldName;
                             $fieldClass = $field->class;
-                            $fieldId = $field->fieldName;
                             $required = $field->required;
                             $readOnly = $field->readOnly;
                             $fieldDetails = getFieldDetailsByName($field->fieldName);
                             if ($fieldDetails) {
                                 $fieldAttributes = json_decode($fieldDetails->attributes);
+                                $fieldId = $fieldAttributes->id ?? $field->fieldName;
                                 $fieldValue = $row->$fieldName ?? '';
                                 $fieldNameAlt = $fieldName . '_alt';
                                 $fieldValueAlt =

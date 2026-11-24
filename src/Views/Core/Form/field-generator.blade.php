@@ -106,7 +106,7 @@
     ]) !!}
 @endif
 @if ($fieldType === 'date')
-    {!! Form::date($fieldId, [
+    {!! Form::date($fieldName, [
         'value' => $fieldValue,
         'altValue' =>   $fieldValueAlt ?? null,
         'class' => 'form-control',
