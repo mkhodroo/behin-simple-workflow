@@ -83,40 +83,40 @@
             </div>
         </div>
     @else
-        <div class="action-buttons bg-white p-2 shadow-md flex justify-between items-center gap-2">
+        <div class="row col-sm-12 bg-white p-2 shadow-md justify-between items-center gap-2">
             @if ($task->show_cancel_button)
-                <a class="btn btn-sm btn-outline-danger m-1" href="{{ route('simpleWorkflow.inbox.cancel', $inbox->id) }}"
+                <a class="col-sm-3 btn btn-sm btn-outline-danger mb-1" href="{{ route('simpleWorkflow.inbox.cancel', $inbox->id) }}"
                     onclick="return confirm('{{ trans('fields.Are you sure?') }}');">
                     <i class="fa fa-danger"></i>
                     {{ trans('fields.Cancel Request') }}
                 </a>
             @endif
             @if ($inbox->status == 'draft')
-                <button class="md-btn md-btn-info" onclick="createCaseNumberAndSave()">
+                <button class="col-sm-3 btn btn-sm btn-outline-info mb-1" onclick="createCaseNumberAndSave()">
                     <i class="material-icons">file_alt</i>
                     {{ trans('fields.Create Case Number and Save') }}
                 </button>
             @else
-                <button class="md-btn md-btn-warning" onclick="showJumpModal()">
+                <button class="col-sm-3 btn btn-sm btn-outline-warning mb-1" onclick="showJumpModal()">
                     <i class="fa fa-arrow-right"></i>
                     {{ trans('fields.Send Manully') }}
                 </button>
 
                 @if ($task->show_reminder_button)
-                    <button class="md-btn md-btn-secondary" type="button" onclick="openReminderModal()">
+                    <button class="col-sm-3 btn btn-sm btn-outline-secondary mb-1" type="button" onclick="openReminderModal()">
                         <i class="material-icons">alarm</i>
                         {{ trans('fields.Add Reminder') }}
                     </button>
                 @endif
 
                 @if ($task->show_save_button)
-                    <button class="md-btn md-btn-primary" onclick="saveForm()">
+                    <button class="col-sm-3 btn btn-sm btn-outline-primary mb-1" onclick="saveForm()">
                         <i class="fa fa-save"></i>
                         {{ trans('fields.Save') }}
                     </button>
                 @endif
 
-                <button class="md-btn md-btn-success" onclick="saveAndNextForm()">
+                <button class="col-sm-3 btn btn-sm btn-outline-success mb-1" onclick="saveAndNextForm()">
                     <i class="fa fa-save"></i>
                     {{ trans('fields.Save and next') }}
                 </button>
@@ -170,102 +170,6 @@
             </div>
         @endif
 
-        <style>
-            .md-btn {
-                position: relative;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                font-size: 14px;
-                font-weight: 500;
-                border: none;
-                border-radius: 9999px;
-                /* pill shape */
-                padding: 10px 20px;
-                color: #fff;
-                cursor: pointer;
-                transition: box-shadow 0.2s ease, transform 0.1s ease;
-                overflow: hidden;
-            }
-
-            .md-btn:active {
-                transform: scale(0.97);
-            }
-
-            .md-btn::after {
-                content: "";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 0;
-                height: 0;
-                background: rgba(255, 255, 255, 0.4);
-                border-radius: 50%;
-                transform: translate(-50%, -50%);
-                transition: width 0.4s ease, height 0.4s ease;
-            }
-
-            .md-btn:active::after {
-                width: 220%;
-                height: 220%;
-            }
-
-            .md-btn-info {
-                background-color: #2196F3;
-            }
-
-            .md-btn-warning {
-                background-color: #FFC107;
-                color: #212121;
-            }
-
-            .md-btn-secondary {
-                background-color: #607d8b;
-            }
-
-            .md-btn-primary {
-                background-color: #3F51B5;
-            }
-
-            .md-btn-danger {
-                background-color: #F44336;
-            }
-
-            .md-btn-success {
-                background-color: #36f495;
-            }
-
-            .action-buttons {
-                position: relative;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                padding: 10px;
-                display: flex;
-                justify-content: space-around;
-                background: #fff;
-                border-top: 1px solid #ddd;
-                z-index: 1000;
-                border-radius: 10px;
-            }
-
-            /* موبایل: ثابت پایین صفحه */
-            @media (max-width: 768px) {
-                .action-buttons {
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    padding: 10px;
-                    display: flex;
-                    justify-content: space-around;
-                    background: #fff;
-                    border-top: 1px solid #ddd;
-                    z-index: 1000;
-                }
-            }
-        </style>
 
     @endif
 @endsection
